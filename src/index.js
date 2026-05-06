@@ -51,57 +51,65 @@ export default {
           return new Response(JSON.stringify({ error: 'Imagem não fornecida' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        // 1. Chamar a API da OpenAI (Visão)
-        // Certifique-se de que a variável de ambiente OPENAI_API_KEY esteja definida no wrangler secret
-        if (!env.OPENAI_API_KEY) {
-          return new Response(JSON.stringify({ error: 'Chave da API da OpenAI não configurada.' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        // 1. Chamar a API do Google Gemini (Visão)
+        if (!env.GEMINI_API_KEY) {
+          return new Response(JSON.stringify({ error: 'Chave da API do Gemini não configurada (GEMINI_API_KEY).' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        // Formatar o base64 corretamente caso o frontend envie puro
-        const imageUrl = base64Image.startsWith('data:image') ? base64Image : `data:image/jpeg;base64,${base64Image}`;
+        // Gemini exige o mime_type e apenas a string base64 pura (sem o prefixo data:image/...)
+        let mimeType = 'image/jpeg';
+        let rawBase64 = base64Image;
 
-        const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        if (base64Image.startsWith('data:')) {
+          mimeType = base64Image.split(';')[0].split(':')[1];
+          rawBase64 = base64Image.split(',')[1];
+        }
+
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+        
+        const geminiResponse = await fetch(geminiUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.OPENAI_API_KEY}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'gpt-4o', // Modelo de visão rápido e capaz
-            response_format: { type: "json_object" },
-            messages: [
-              {
-                role: 'system',
-                content: SYSTEM_PROMPT
-              },
+            system_instruction: {
+              parts: [{ text: SYSTEM_PROMPT }]
+            },
+            contents: [
               {
                 role: 'user',
-                content: [
-                  { type: 'text', text: 'Analise esta imagem segundo as regras do sistema.' },
+                parts: [
+                  { text: 'Analise esta imagem estritamente segundo as regras do sistema e retorne apenas o JSON.' },
                   {
-                    type: 'image_url',
-                    image_url: {
-                      url: imageUrl
+                    inline_data: {
+                      mime_type: mimeType,
+                      data: rawBase64
                     }
                   }
                 ]
               }
-            ]
+            ],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
           })
         });
 
-        if (!openAiResponse.ok) {
-          const errorText = await openAiResponse.text();
-          console.error("Erro da OpenAI:", errorText);
+        if (!geminiResponse.ok) {
+          const errorText = await geminiResponse.text();
+          console.error("Erro do Gemini:", errorText);
           return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        const openAiData = await openAiResponse.json();
+        const geminiData = await geminiResponse.json();
         let aiResult;
         
         try {
-           aiResult = JSON.parse(openAiData.choices[0].message.content);
+           const responseText = geminiData.candidates[0].content.parts[0].text;
+           aiResult = JSON.parse(responseText);
         } catch (e) {
+           console.error("Erro ao fazer parse do JSON do Gemini:", e);
            return new Response(JSON.stringify({ error: 'Resposta inválida da IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 

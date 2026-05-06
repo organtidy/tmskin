@@ -4,7 +4,7 @@
   "description": "Skincare AI MVP",
   "scripts": {
     "dev": "npx serve public -p 3000",
-    "build": "echo 'Build concluído (projeto estático)'"
+    "build": "mkdir -p dist && cp -r public/* dist/"
   },
   "dependencies": {}
 }

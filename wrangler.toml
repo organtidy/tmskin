@@ -1,0 +1,21 @@
+name = "tmskin-backend"
+main = "src/index.js"
+compatibility_date = "2024-05-04"
+
+# Habilita o uso de modulos ES
+compatibility_flags = ["nodejs_compat"]
+
+# Aqui você pode adicionar variáveis de ambiente públicas
+[vars]
+# API_URL = "https://api.openai.com/v1/chat/completions"
+
+# Binding do banco de dados D1
+# Você precisará rodar `wrangler d1 create tmskin-db` e colar os IDs aqui.
+[[d1_databases]]
+binding = "DB"
+database_name = "tmskin-db"
+database_id = "25d01120-3c4c-4df4-a2f9-0a6d1bf98df1"
+
+# Atenção: Você deve adicionar sua API Key da OpenAI de forma segura, executando o seguinte comando no terminal:
+# wrangler secret put OPENAI_API_KEY
+# E então colar sua chave quando solicitado. Não coloque a chave diretamente neste arquivo!

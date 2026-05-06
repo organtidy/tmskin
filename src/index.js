@@ -1,0 +1,145 @@
+/**
+ * Welcome to Cloudflare Workers!
+ *
+ * This is an API for the Skincare AI MVP.
+ * It receives a Base64 image, sends it to OpenAI for analysis,
+ * and fetches matching products from Cloudflare D1.
+ */
+
+const SYSTEM_PROMPT = `Você é um especialista em cosmetologia e dermatologia estética altamente capacitado, atuando como o motor de análise visual de um aplicativo de skincare.
+Sua Missão: Analisar a imagem fornecida, identificar a parte do corpo humano exibida, avaliar o estado aparente da pele com foco puramente cosmético e recomendar categorias de princípios ativos (não marcas comerciais) que ajudem a melhorar o aspecto da pele.
+Regras Estritas de Segurança e Ética:
+1. Você NÃO fornece diagnósticos médicos. Nunca use palavras como doença, câncer, melanoma, infecção, etc.
+2. Se identificar algo grave, recomende gentilmente a consulta com um dermatologista na mensagem ao usuário.
+3. Foco puramente cosmético: hidratação, oleosidade, manchas superficiais, textura, linhas finas e acne cosmética.
+4. Se a imagem for de baixíssima qualidade, muito escura, borrada, ou não for uma parte do corpo humano, você deve sinalizar o erro e pedir uma nova foto.
+Formato de Saída (OBRIGATÓRIO):
+Retorne EXCLUSIVAMENTE um objeto JSON válido, seguindo a estrutura:
+{
+  "analise_valida": true,
+  "erro_imagem": null,
+  "parte_do_corpo": "rosto",
+  "tipo_pele_aparente": "oleosa",
+  "pontos_de_atencao": ["poros dilatados", "vermelhidão leve"],
+  "ativos_recomendados": ["ácido salicílico", "niacinamida"],
+  "mensagem_usuario": "Notei que a pele do seu rosto apresenta...",
+  "aviso_legal": "Esta é uma análise cosmética por IA e não substitui um dermatologista."
+}`;
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export default {
+  async fetch(request, env, ctx) {
+    // Lidar com requisições preflight (CORS)
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
+    const url = new URL(request.url);
+
+    // Rota de análise
+    if (request.method === 'POST' && url.pathname === '/api/analyze') {
+      try {
+        const body = await request.json();
+        const base64Image = body.image; // Espera-se a imagem em base64 com ou sem o prefixo data:image/jpeg;base64,
+
+        if (!base64Image) {
+          return new Response(JSON.stringify({ error: 'Imagem não fornecida' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        // 1. Chamar a API da OpenAI (Visão)
+        // Certifique-se de que a variável de ambiente OPENAI_API_KEY esteja definida no wrangler secret
+        if (!env.OPENAI_API_KEY) {
+          return new Response(JSON.stringify({ error: 'Chave da API da OpenAI não configurada.' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        // Formatar o base64 corretamente caso o frontend envie puro
+        const imageUrl = base64Image.startsWith('data:image') ? base64Image : `data:image/jpeg;base64,${base64Image}`;
+
+        const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${env.OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o', // Modelo de visão rápido e capaz
+            response_format: { type: "json_object" },
+            messages: [
+              {
+                role: 'system',
+                content: SYSTEM_PROMPT
+              },
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: 'Analise esta imagem segundo as regras do sistema.' },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: imageUrl
+                    }
+                  }
+                ]
+              }
+            ]
+          })
+        });
+
+        if (!openAiResponse.ok) {
+          const errorText = await openAiResponse.text();
+          console.error("Erro da OpenAI:", errorText);
+          return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        const openAiData = await openAiResponse.json();
+        let aiResult;
+        
+        try {
+           aiResult = JSON.parse(openAiData.choices[0].message.content);
+        } catch (e) {
+           return new Response(JSON.stringify({ error: 'Resposta inválida da IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+
+        let produtosRecomendados = [];
+
+        // 2. Se a análise for válida, buscar produtos no D1 baseados nos ativos recomendados
+        if (aiResult.analise_valida && aiResult.ativos_recomendados && aiResult.ativos_recomendados.length > 0) {
+          const ativos = aiResult.ativos_recomendados;
+          
+          // Construir a query dinamicamente. Ex: "principio_ativo LIKE ? OR principio_ativo LIKE ?"
+          const placeholders = ativos.map(() => 'principio_ativo LIKE ?').join(' OR ');
+          // Colocar % antes e depois para buscar qualquer correspondência na string e deixar minúsculo
+          const values = ativos.map(ativo => `%${ativo.toLowerCase()}%`);
+
+          const query = `SELECT * FROM produtos WHERE ${placeholders} LIMIT 5`;
+          
+          // Executar a query no Cloudflare D1
+          const { results } = await env.DB.prepare(query).bind(...values).all();
+          produtosRecomendados = results;
+        }
+
+        // 3. Montar a resposta final para o frontend
+        const responsePayload = {
+          analise: aiResult,
+          produtos: produtosRecomendados
+        };
+
+        // A memória é liberada após o retorno da requisição. A imagem base64 e os resultados locais são descartados.
+        return new Response(JSON.stringify(responsePayload), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      } catch (error) {
+        console.error("Erro no Worker:", error);
+        return new Response(JSON.stringify({ error: 'Erro interno no servidor' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+    }
+
+    return new Response('Not found', { status: 404, headers: corsHeaders });
+  },
+};

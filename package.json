@@ -1,0 +1,9 @@
+{
+  "name": "tmskin-mvp",
+  "version": "1.0.0",
+  "description": "Skincare AI MVP",
+  "scripts": {
+    "dev": "npx serve public -p 3000"
+  },
+  "dependencies": {}
+}

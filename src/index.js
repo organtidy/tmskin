@@ -73,7 +73,7 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            systemInstruction: {
+            system_instruction: {
               parts: [{ text: SYSTEM_PROMPT }]
             },
             contents: [
@@ -82,8 +82,8 @@ export default {
                 parts: [
                   { text: 'Analise esta imagem estritamente segundo as regras do sistema e retorne apenas o JSON.' },
                   {
-                    inlineData: {
-                      mimeType: mimeType,
+                    inline_data: {
+                      mime_type: mimeType,
                       data: rawBase64
                     }
                   }
@@ -91,7 +91,7 @@ export default {
               }
             ],
             generationConfig: {
-              responseMimeType: "application/json"
+              response_mime_type: "application/json"
             }
           })
         });

@@ -65,7 +65,7 @@ export default {
           rawBase64 = base64Image.split(',')[1];
         }
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${env.GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`;
         
         const geminiResponse = await fetch(geminiUrl, {
           method: 'POST',

@@ -73,26 +73,20 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: SYSTEM_PROMPT }]
-            },
             contents: [
               {
                 role: 'user',
                 parts: [
-                  { text: 'Analise esta imagem estritamente segundo as regras do sistema e retorne apenas o JSON.' },
+                  { text: `${SYSTEM_PROMPT}\n\nAnalise esta imagem estritamente segundo as regras acima e retorne apenas o JSON.` },
                   {
-                    inline_data: {
-                      mime_type: mimeType,
+                    inlineData: {
+                      mimeType: mimeType,
                       data: rawBase64
                     }
                   }
                 ]
               }
-            ],
-            generationConfig: {
-              response_mime_type: "application/json"
-            }
+            ]
           })
         });
 

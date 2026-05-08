@@ -93,7 +93,7 @@ export default {
         if (!geminiResponse.ok) {
           const errorText = await geminiResponse.text();
           console.error("Erro do Gemini:", errorText);
-          return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA', details: errorText }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         const geminiData = await geminiResponse.json();
@@ -106,8 +106,7 @@ export default {
            aiResult = JSON.parse(responseText);
         } catch (e) {
            console.error("Erro ao fazer parse do JSON do Gemini:", e);
-           console.error("Resposta bruta:", geminiData?.candidates?.[0]?.content?.parts?.[0]?.text);
-           return new Response(JSON.stringify({ error: 'Resposta inválida da IA', raw: geminiData?.candidates?.[0]?.content?.parts?.[0]?.text }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+           return new Response(JSON.stringify({ error: 'Resposta inválida da IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         let produtosRecomendados = [];

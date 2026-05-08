@@ -86,7 +86,10 @@ export default {
                   }
                 ]
               }
-            ]
+            ],
+            generationConfig: {
+              response_mime_type: "application/json"
+            }
           })
         });
 
@@ -100,11 +103,14 @@ export default {
         let aiResult;
         
         try {
-           const responseText = geminiData.candidates[0].content.parts[0].text;
+           let responseText = geminiData.candidates[0].content.parts[0].text;
+           // Limpar possíveis blocos de código markdown
+           responseText = responseText.replace(/```json\n?/, '').replace(/```\n?/, '').trim();
            aiResult = JSON.parse(responseText);
         } catch (e) {
            console.error("Erro ao fazer parse do JSON do Gemini:", e);
-           return new Response(JSON.stringify({ error: 'Resposta inválida da IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+           console.error("Resposta bruta:", geminiData?.candidates?.[0]?.content?.parts?.[0]?.text);
+           return new Response(JSON.stringify({ error: 'Resposta inválida da IA', raw: geminiData?.candidates?.[0]?.content?.parts?.[0]?.text }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         let produtosRecomendados = [];

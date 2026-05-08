@@ -73,7 +73,7 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            system_instruction: {
+            systemInstruction: {
               parts: [{ text: SYSTEM_PROMPT }]
             },
             contents: [
@@ -82,8 +82,8 @@ export default {
                 parts: [
                   { text: 'Analise esta imagem estritamente segundo as regras do sistema e retorne apenas o JSON.' },
                   {
-                    inline_data: {
-                      mime_type: mimeType,
+                    inlineData: {
+                      mimeType: mimeType,
                       data: rawBase64
                     }
                   }
@@ -99,7 +99,7 @@ export default {
         if (!geminiResponse.ok) {
           const errorText = await geminiResponse.text();
           console.error("Erro do Gemini:", errorText);
-          return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA', details: errorText }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         const geminiData = await geminiResponse.json();

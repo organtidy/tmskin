@@ -65,6 +65,11 @@ export default {
           rawBase64 = base64Image.split(',')[1];
         }
 
+        const listModelsUrl = `https://generativelanguage.googleapis.com/v1/models?key=${env.GEMINI_API_KEY}`;
+        const listResponse = await fetch(listModelsUrl);
+        const listData = await listResponse.json();
+        return new Response(JSON.stringify({ models: listData }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
         const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`;
         
         const geminiResponse = await fetch(geminiUrl, {

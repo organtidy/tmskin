@@ -86,10 +86,7 @@ export default {
                   }
                 ]
               }
-            ],
-            generationConfig: {
-              response_mime_type: "application/json"
-            }
+            ]
           })
         });
 

@@ -4,159 +4,359 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skincare AI - Análise de Pele</title>
-    <!-- Tailwind CSS para estilização rápida e responsiva -->
+    <!-- Tailwind CSS for layout -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#f472b6', // pink-400
-                        secondary: '#fda4af', // rose-300
+                        primary: '#ff7eb3',
+                        secondary: '#ff758c',
+                        bgBase: '#e0e5ec',
                     }
                 }
             }
         }
     </script>
-    <!-- Ícones -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
     <style>
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        /* Skeuomorphic Base Theme */
+        body {
+            background-color: #e0e5ec;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #4a4a4a;
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor */
         }
-        /* Loader spinner */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #f472b6;
+
+        /* React Bits - Custom Cursor Glow */
+        .cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 126, 179, 0.4) 0%, rgba(255, 117, 140, 0) 70%);
             border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            mix-blend-mode: overlay;
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 12px;
+            height: 12px;
+            background: #ff7eb3;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            box-shadow: 0 0 10px rgba(255, 126, 179, 0.8),
+                        0 0 20px rgba(255, 126, 179, 0.6);
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Skeuomorphic Card */
+        .skeuo-card {
+            background: #e0e5ec;
+            border-radius: 30px;
+            box-shadow: 
+                20px 20px 60px #bec3c9,
+                -20px -20px 60px #ffffff;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            border: 1px solid rgba(255,255,255,0.4);
+            transform-style: preserve-3d;
+        }
+
+        .skeuo-card:hover {
+            box-shadow: 
+                15px 15px 45px #bec3c9,
+                -15px -15px 45px #ffffff;
+        }
+
+        /* Skeuomorphic Inner Depressed */
+        .skeuo-inner {
+            background: #e0e5ec;
+            border-radius: 20px;
+            box-shadow: inset 10px 10px 20px #bec3c9,
+                        inset -10px -10px 20px #ffffff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Skeuomorphic Buttons */
+        .skeuo-btn {
+            background: #e0e5ec;
+            border-radius: 15px;
+            box-shadow: 
+                8px 8px 16px #bec3c9,
+                -8px -8px 16px #ffffff;
+            transition: all 0.2s ease;
+            color: #ff7eb3;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .skeuo-btn:active, .skeuo-btn.active {
+            box-shadow: 
+                inset 6px 6px 12px #bec3c9,
+                inset -6px -6px 12px #ffffff;
+            color: #ff758c;
+            transform: scale(0.98);
+        }
+
+        .skeuo-btn-primary {
+            background: linear-gradient(145deg, #ff87bd, #e671a1);
+            color: white;
+            box-shadow: 
+                8px 8px 16px #bec3c9,
+                -8px -8px 16px #ffffff;
+            border: none;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .skeuo-btn-primary:active {
+            box-shadow: 
+                inset 6px 6px 12px #c9638c,
+                inset -6px -6px 12px #ff91cc;
+        }
+
+        /* Text Styling */
+        .skeuo-text {
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-image: linear-gradient(to right, #ff758c, #ff7eb3);
+            text-shadow: 2px 2px 4px rgba(255, 126, 179, 0.3);
+            font-weight: 900;
+        }
+
+        .inset-text {
+            color: #8892a0;
+            text-shadow: 1px 1px 1px #fff;
+        }
+
+        /* Custom Loader */
+        .loader-ring {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            box-shadow: 
+                inset 8px 8px 16px #bec3c9,
+                inset -8px -8px 16px #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .loader-ring::before {
+            content: '';
+            position: absolute;
             width: 40px;
             height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff87bd, #e671a1);
+            box-shadow: 
+                4px 4px 8px rgba(0,0,0,0.1),
+                -4px -4px 8px rgba(255,255,255,0.8);
+            animation: bounceRing 1.5s infinite ease-in-out alternate;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        @keyframes bounceRing {
+            0% { transform: scale(0.5); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 1; }
         }
+
+        /* Float animation */
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
     </style>
 </head>
-<body class="bg-gradient-to-br from-pink-50 to-rose-100 min-h-screen font-sans text-gray-800">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
 
-    <div class="max-w-md mx-auto p-4 sm:p-6 min-h-screen flex flex-col relative">
+    <div class="cursor-glow"></div>
+    <div class="cursor-dot"></div>
+
+    <div class="max-w-md w-full relative z-10">
         
         <!-- Header -->
-        <header class="text-center py-6">
-            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-400">
+        <header class="text-center mb-8 gs-reveal">
+            <h1 class="text-4xl skeuo-text tracking-tight mb-2 float">
                 Skincare AI
             </h1>
-            <p class="text-sm text-gray-500 mt-2">Sua análise cosmética inteligente, com total privacidade.</p>
+            <p class="text-sm inset-text font-medium uppercase tracking-widest">Análise Cosmética Inteligente</p>
         </header>
 
-        <!-- Main Content -->
-        <main class="flex-grow flex flex-col gap-6">
+        <main class="w-full relative">
             
-            <!-- App Section (Capture/Upload) -->
-            <section id="capture-section" class="glass rounded-3xl p-6 shadow-xl flex flex-col items-center">
+            <!-- Capture Section -->
+            <section id="capture-section" class="skeuo-card p-8 flex flex-col items-center gap-6 gs-reveal">
                 
-                <div id="video-container" class="w-full relative aspect-[3/4] bg-gray-200 rounded-2xl overflow-hidden shadow-inner mb-4 flex items-center justify-center">
-                    <!-- Icone placeholder -->
+                <div id="video-container" class="skeuo-inner w-full aspect-[3/4] relative overflow-hidden flex items-center justify-center">
                     <div id="camera-placeholder" class="text-gray-400 flex flex-col items-center">
-                        <i class="fas fa-camera text-5xl mb-2"></i>
-                        <span class="text-sm font-medium">Câmera desativada</span>
+                        <div class="w-20 h-20 rounded-full skeuo-btn flex items-center justify-center mb-4 pointer-events-none">
+                            <i class="fas fa-camera text-3xl text-gray-400" style="text-shadow: 1px 1px 0 #fff"></i>
+                        </div>
+                        <span class="inset-text font-bold">Câmera Inativa</span>
                     </div>
                     
-                    <video id="videoElement" class="absolute inset-0 w-full h-full object-cover hidden" autoplay playsinline></video>
+                    <video id="videoElement" class="absolute inset-0 w-full h-full object-cover hidden rounded-2xl" autoplay playsinline></video>
                     <canvas id="canvasElement" class="hidden"></canvas>
-                    <img id="previewImage" class="absolute inset-0 w-full h-full object-cover hidden" />
+                    <img id="previewImage" class="absolute inset-0 w-full h-full object-cover hidden rounded-2xl" />
                 </div>
 
-                <div class="w-full flex flex-col gap-3">
-                    <button id="startCameraBtn" class="w-full bg-white text-pink-500 border border-pink-200 font-semibold py-3 rounded-xl shadow-sm hover:bg-pink-50 transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-video"></i> Abrir Câmera
+                <div class="w-full flex flex-col gap-4">
+                    <button id="startCameraBtn" class="skeuo-btn w-full py-4 text-lg flex items-center justify-center gap-3">
+                        <i class="fas fa-video"></i> <span>Abrir Câmera</span>
                     </button>
                     
-                    <button id="captureBtn" class="w-full bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 hidden">
-                        <i class="fas fa-camera-retro"></i> Capturar Rosto
+                    <button id="captureBtn" class="skeuo-btn-primary w-full py-4 text-lg flex items-center justify-center gap-3 hidden">
+                        <i class="fas fa-camera-retro"></i> <span>Capturar Foto</span>
                     </button>
                     
                     <div class="relative w-full">
                         <input type="file" id="uploadInput" accept="image/*" class="hidden" />
-                        <button id="uploadBtn" class="w-full bg-white text-gray-600 border border-gray-200 font-semibold py-3 rounded-xl shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                            <i class="fas fa-upload"></i> Fazer Upload de Foto
+                        <button id="uploadBtn" class="skeuo-btn w-full py-4 text-lg flex items-center justify-center gap-3 text-gray-500">
+                            <i class="fas fa-upload"></i> <span>Ou Enviar Arquivo</span>
                         </button>
                     </div>
 
-                    <button id="analyzeBtn" class="w-full bg-gray-800 text-white font-bold py-3 rounded-xl shadow-md hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 hidden mt-2">
-                        <i class="fas fa-magic"></i> Analisar Minha Pele
+                    <button id="analyzeBtn" class="skeuo-btn-primary w-full py-4 text-lg flex items-center justify-center gap-3 hidden mt-4">
+                        <i class="fas fa-magic"></i> <span>Analisar Pele</span>
                     </button>
                 </div>
             </section>
 
             <!-- Loading State -->
-            <section id="loading-section" class="hidden glass rounded-3xl p-8 shadow-xl flex flex-col items-center justify-center text-center">
-                <div class="loader mb-4"></div>
-                <h2 class="text-lg font-bold text-gray-800">Analisando sua pele...</h2>
-                <p class="text-sm text-gray-500 mt-2">Nossa IA está identificando os melhores ativos para você. Isso leva alguns segundos.</p>
-                <p class="text-xs text-pink-400 font-medium mt-4"><i class="fas fa-shield-alt"></i> Sua foto não será salva. Privacidade garantida.</p>
+            <section id="loading-section" class="hidden skeuo-card p-10 flex flex-col items-center justify-center text-center absolute top-0 left-0 w-full">
+                <div class="loader-ring mb-8"></div>
+                <h2 class="text-xl font-extrabold skeuo-text mb-2">Processando IA...</h2>
+                <p class="text-sm inset-text">Avaliando textura, poros e hidratação.</p>
             </section>
 
             <!-- Results Section -->
-            <section id="results-section" class="hidden flex-col gap-4">
+            <section id="results-section" class="hidden flex flex-col gap-6 absolute top-0 left-0 w-full">
                 
-                <button id="resetBtn" class="self-start text-sm text-pink-500 font-medium hover:text-pink-600 mb-2 flex items-center gap-1">
-                    <i class="fas fa-arrow-left"></i> Fazer nova análise
+                <button id="resetBtn" class="skeuo-btn w-12 h-12 rounded-full self-start flex items-center justify-center text-gray-500 mb-2">
+                    <i class="fas fa-arrow-left"></i>
                 </button>
 
                 <!-- AI Analysis Card -->
-                <div class="glass rounded-3xl p-6 shadow-xl border-l-4 border-l-pink-400">
-                    <h2 class="text-xl font-bold text-gray-800 mb-3"><i class="fas fa-clipboard-check text-pink-400"></i> Relatório da IA</h2>
-                    <p id="result-message" class="text-gray-600 text-sm leading-relaxed mb-4"></p>
+                <div class="skeuo-card p-6 tilt-card">
+                    <div class="flex items-center gap-3 mb-4 border-b border-gray-300 pb-4 border-opacity-50">
+                        <div class="w-10 h-10 skeuo-inner rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-pink-400"></i>
+                        </div>
+                        <h2 class="text-xl font-extrabold text-gray-700">Diagnóstico</h2>
+                    </div>
                     
-                    <div class="bg-pink-50 rounded-xl p-4 mb-4">
-                        <h3 class="text-xs font-bold text-pink-600 uppercase tracking-wider mb-2">Pontos de Atenção</h3>
-                        <ul id="result-points" class="list-disc list-inside text-sm text-gray-700 space-y-1"></ul>
+                    <p id="result-message" class="text-gray-600 text-sm leading-relaxed mb-6 font-medium"></p>
+                    
+                    <div class="skeuo-inner p-5 mb-6">
+                        <h3 class="text-xs font-bold text-pink-500 uppercase tracking-widest mb-3" style="text-shadow: 1px 1px 0px #fff">Pontos de Atenção</h3>
+                        <ul id="result-points" class="text-sm text-gray-600 space-y-2 font-medium"></ul>
                     </div>
 
-                    <div class="flex gap-4 text-sm">
-                        <div class="flex-1">
-                            <span class="block text-xs text-gray-400">Tipo aparente</span>
-                            <span id="result-type" class="font-semibold text-gray-700 capitalize"></span>
+                    <div class="flex gap-4 text-sm justify-between">
+                        <div class="skeuo-btn p-3 rounded-xl flex-1 text-center pointer-events-none">
+                            <span class="block text-[10px] uppercase text-gray-400 font-bold mb-1">Tipo</span>
+                            <span id="result-type" class="font-black text-gray-700"></span>
                         </div>
-                        <div class="flex-1">
-                            <span class="block text-xs text-gray-400">Parte analisada</span>
-                            <span id="result-body-part" class="font-semibold text-gray-700 capitalize"></span>
+                        <div class="skeuo-btn p-3 rounded-xl flex-1 text-center pointer-events-none">
+                            <span class="block text-[10px] uppercase text-gray-400 font-bold mb-1">Área</span>
+                            <span id="result-body-part" class="font-black text-gray-700"></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recommended Products -->
                 <div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-3 ml-2">Produtos Recomendados <span class="text-sm font-normal text-gray-500">(Match D1)</span></h3>
-                    <div id="products-container" class="flex flex-col gap-3">
-                        <!-- Cards injetados via JS -->
+                    <h3 class="text-lg font-extrabold text-gray-700 mb-4 ml-2 inset-text">Rotina Sugerida</h3>
+                    <div id="products-container" class="flex flex-col gap-4">
+                        <!-- Injected Cards -->
                     </div>
-                </div>
-
-                <!-- Aviso Legal -->
-                <div class="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-500 text-center flex items-start gap-2">
-                    <i class="fas fa-info-circle text-gray-400 mt-0.5"></i>
-                    <p id="result-disclaimer" class="text-left"></p>
                 </div>
                 
             </section>
-
         </main>
-        
     </div>
 
     <script>
-        // Configurações e Elementos
-        // IMPORTANTE: Altere esta URL para a URL de produção do seu Worker Cloudflare após o deploy
-        // Configurações e Elementos
-        const WORKER_URL = "https://tmskin-backend.organtidy.workers.dev/api/analyze"; // Ambiente de Produção
+        // Custom Cursor Logic
+        const cursorGlow = document.querySelector('.cursor-glow');
+        const cursorDot = document.querySelector('.cursor-dot');
+        
+        window.addEventListener('mousemove', (e) => {
+            gsap.to(cursorGlow, { x: e.clientX, y: e.clientY, duration: 0.8, ease: "power2.out" });
+            gsap.to(cursorDot, { x: e.clientX, y: e.clientY, duration: 0.1, ease: "none" });
+        });
+
+        // 3D Tilt Effect on cards
+        function initTilt() {
+            const cards = document.querySelectorAll('.tilt-card, .skeuo-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -5;
+                    const rotateY = ((x - centerX) / centerX) * 5;
+
+                    gsap.to(card, {
+                        rotateX: rotateX,
+                        rotateY: rotateY,
+                        transformPerspective: 1000,
+                        duration: 0.4,
+                        ease: "power1.out"
+                    });
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, {
+                        rotateX: 0,
+                        rotateY: 0,
+                        duration: 0.7,
+                        ease: "elastic.out(1, 0.5)"
+                    });
+                });
+            });
+        }
+        initTilt();
+
+        // Initial Animation Reveal
+        gsap.from(".gs-reveal", {
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: "back.out(1.7)"
+        });
+
+        // API URL
+        const WORKER_URL = "https://tmskin-backend.organtidy.workers.dev/api/analyze";
 
         const video = document.getElementById('videoElement');
         const canvas = document.getElementById('canvasElement');
@@ -177,10 +377,9 @@
         let currentStream = null;
         let base64ImageToAnalyze = null;
 
-        // Iniciar a câmera
         startCameraBtn.addEventListener('click', async () => {
+            gsap.to(startCameraBtn, {scale: 0.95, duration: 0.1, yoyo: true, repeat: 1});
             try {
-                // Preferir câmera frontal para rosto
                 currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 video.srcObject = currentStream;
                 video.classList.remove('hidden');
@@ -191,40 +390,52 @@
                 uploadBtn.classList.add('hidden');
                 captureBtn.classList.remove('hidden');
                 analyzeBtn.classList.add('hidden');
+                
+                gsap.from(video, { opacity: 0, scale: 0.8, duration: 0.5, ease: "power2.out" });
             } catch (err) {
-                alert("Erro ao acessar a câmera. Verifique as permissões do navegador.");
-                console.error(err);
+                alert("Permissão de câmera negada.");
             }
         });
 
-        // Capturar foto da câmera
         captureBtn.addEventListener('click', () => {
+            gsap.to(captureBtn, {scale: 0.95, duration: 0.1, yoyo: true, repeat: 1});
+            
+            // Flash effect
+            const flash = document.createElement('div');
+            flash.style.position = 'absolute';
+            flash.style.inset = '0';
+            flash.style.backgroundColor = 'white';
+            flash.style.zIndex = '50';
+            flash.style.borderRadius = '1rem';
+            document.getElementById('video-container').appendChild(flash);
+            gsap.to(flash, {opacity: 0, duration: 0.5, onComplete: () => flash.remove()});
+
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Obter base64
             base64ImageToAnalyze = canvas.toDataURL('image/jpeg', 0.8);
             
-            // Parar o stream de vídeo
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            // Atualizar UI
             video.classList.add('hidden');
             previewImage.src = base64ImageToAnalyze;
             previewImage.classList.remove('hidden');
             
             captureBtn.classList.add('hidden');
-            startCameraBtn.innerHTML = '<i class="fas fa-redo"></i> Tentar Novamente';
+            
+            startCameraBtn.innerHTML = '<i class="fas fa-redo"></i> <span>Retirar</span>';
             startCameraBtn.classList.remove('hidden');
             analyzeBtn.classList.remove('hidden');
+            
+            gsap.from(analyzeBtn, {y: 20, opacity: 0, duration: 0.4, ease: "back.out(2)"});
         });
 
-        // Upload de foto
         uploadBtn.addEventListener('click', () => {
+            gsap.to(uploadBtn, {scale: 0.95, duration: 0.1, yoyo: true, repeat: 1});
             uploadInput.click();
         });
 
@@ -241,43 +452,45 @@
                     previewImage.classList.remove('hidden');
                     
                     startCameraBtn.classList.add('hidden');
-                    uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Escolher Outra';
+                    uploadBtn.innerHTML = '<i class="fas fa-upload"></i> <span>Trocar</span>';
                     analyzeBtn.classList.remove('hidden');
+                    
+                    gsap.from(previewImage, { opacity: 0, scale: 0.9, duration: 0.5 });
+                    gsap.from(analyzeBtn, {y: 20, opacity: 0, duration: 0.4, ease: "back.out(2)"});
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // Fazer a Análise (POST para o Worker)
         analyzeBtn.addEventListener('click', async () => {
             if (!base64ImageToAnalyze) return;
-
-            captureSection.classList.add('hidden');
-            loadingSection.classList.remove('hidden');
+            
+            gsap.to(captureSection, { 
+                opacity: 0, y: -50, duration: 0.4, ease: "power2.in", 
+                onComplete: () => {
+                    captureSection.classList.add('hidden');
+                    loadingSection.classList.remove('hidden');
+                    gsap.fromTo(loadingSection, {opacity: 0, scale: 0.9}, {opacity: 1, scale: 1, duration: 0.5});
+                }
+            });
 
             try {
                 const response = await fetch(WORKER_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: base64ImageToAnalyze })
                 });
 
                 const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(data.error || 'Erro desconhecido');
-                }
-
+                if (!response.ok) throw new Error(data.error || 'Erro desconhecido');
                 if (data.analise.erro_imagem) {
                     alert(`Erro da IA: ${data.analise.erro_imagem}`);
                     resetUI();
                     return;
                 }
-
                 if (!data.analise.analise_valida) {
-                    alert("A IA não conseguiu validar a análise desta imagem.");
+                    alert("A IA não conseguiu validar a análise.");
                     resetUI();
                     return;
                 }
@@ -285,52 +498,39 @@
                 renderResults(data);
 
             } catch (error) {
-                alert(`Falha ao conectar com o servidor: ${error.message}`);
-                console.error(error);
+                alert(`Falha ao conectar: ${error.message}`);
                 resetUI();
             }
         });
 
         function renderResults(data) {
-            loadingSection.classList.add('hidden');
-            resultsSection.classList.remove('hidden');
-            resultsSection.classList.add('flex');
-
             const { analise, produtos } = data;
 
-            // Preencher dados da IA
             document.getElementById('result-message').innerText = analise.mensagem_usuario;
             document.getElementById('result-type').innerText = analise.tipo_pele_aparente || '-';
             document.getElementById('result-body-part').innerText = analise.parte_do_corpo || '-';
-            document.getElementById('result-disclaimer').innerText = analise.aviso_legal;
 
             const pointsContainer = document.getElementById('result-points');
             pointsContainer.innerHTML = '';
-            if (analise.pontos_de_atencao && analise.pontos_de_atencao.length > 0) {
-                analise.pontos_de_atencao.forEach(point => {
-                    const li = document.createElement('li');
-                    li.innerText = point;
-                    pointsContainer.appendChild(li);
-                });
-            } else {
-                pointsContainer.innerHTML = '<li>Nenhum ponto de atenção detectado.</li>';
-            }
+            (analise.pontos_de_atencao || []).forEach(point => {
+                pointsContainer.innerHTML += `<li class="flex items-center gap-2"><i class="fas fa-check-circle text-pink-400"></i> ${point}</li>`;
+            });
 
-            // Preencher Produtos Recomendados
             const productsContainer = document.getElementById('products-container');
             productsContainer.innerHTML = '';
 
             if (produtos && produtos.length > 0) {
-                produtos.forEach(prod => {
+                produtos.forEach((prod, i) => {
                     const card = `
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4 items-center">
-                        <img src="${prod.url_imagem}" alt="${prod.nome}" class="w-16 h-16 object-cover rounded-lg bg-gray-100">
-                        <div class="flex-grow">
-                            <span class="text-xs font-bold text-pink-500 uppercase tracking-wider">${prod.marca}</span>
-                            <h4 class="text-sm font-bold text-gray-800 leading-tight">${prod.nome}</h4>
-                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">${prod.descricao}</p>
+                    <div class="skeuo-card p-4 flex gap-4 items-center tilt-card gs-product" style="opacity: 0;">
+                        <div class="w-16 h-16 skeuo-inner rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center p-2">
+                            <img src="${prod.url_imagem}" alt="${prod.nome}" class="w-full h-full object-contain mix-blend-multiply">
                         </div>
-                        <a href="${prod.link_compra}" target="_blank" class="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center hover:bg-pink-100 transition-colors flex-shrink-0">
+                        <div class="flex-grow">
+                            <span class="text-[10px] font-black text-pink-400 uppercase tracking-widest">${prod.marca}</span>
+                            <h4 class="text-sm font-extrabold text-gray-700 leading-tight mt-0.5">${prod.nome}</h4>
+                        </div>
+                        <a href="${prod.link_compra}" target="_blank" class="w-10 h-10 skeuo-btn rounded-full flex items-center justify-center text-pink-500 hover:text-pink-600 flex-shrink-0">
                             <i class="fas fa-shopping-bag"></i>
                         </a>
                     </div>
@@ -338,38 +538,68 @@
                     productsContainer.insertAdjacentHTML('beforeend', card);
                 });
             } else {
-                productsContainer.innerHTML = `
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
-                        <p class="text-sm text-gray-500">Nenhum produto cadastrado para os ativos recomendados: ${analise.ativos_recomendados.join(', ')}.</p>
-                    </div>
-                `;
+                productsContainer.innerHTML = `<div class="skeuo-inner p-6 text-center text-sm font-bold inset-text rounded-2xl">Nenhum produto cadastrado para: ${analise.ativos_recomendados.join(', ')}</div>`;
             }
             
-            // Garantir que a imagem seja apagada da memória do frontend
+            initTilt(); // Re-bind tilt to new cards
+
+            gsap.to(loadingSection, {
+                opacity: 0, scale: 0.9, duration: 0.4, 
+                onComplete: () => {
+                    loadingSection.classList.add('hidden');
+                    resultsSection.classList.remove('hidden');
+                    
+                    // Animate results in
+                    gsap.fromTo(resultsSection, 
+                        {opacity: 0, y: 50}, 
+                        {opacity: 1, y: 0, duration: 0.6, ease: "power2.out"}
+                    );
+                    
+                    // Stagger products
+                    gsap.to(".gs-product", {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.5,
+                        stagger: 0.15,
+                        ease: "back.out(1.5)",
+                        delay: 0.3
+                    });
+                }
+            });
+            
             base64ImageToAnalyze = null;
         }
 
         function resetUI() {
-            loadingSection.classList.add('hidden');
-            resultsSection.classList.add('hidden');
-            resultsSection.classList.remove('flex');
-            captureSection.classList.remove('hidden');
-            
-            previewImage.classList.add('hidden');
-            cameraPlaceholder.classList.remove('hidden');
-            
-            startCameraBtn.innerHTML = '<i class="fas fa-video"></i> Abrir Câmera';
-            startCameraBtn.classList.remove('hidden');
-            uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Fazer Upload de Foto';
-            uploadBtn.classList.remove('hidden');
-            analyzeBtn.classList.add('hidden');
-            captureBtn.classList.add('hidden');
-            
-            base64ImageToAnalyze = null;
-            uploadInput.value = "";
+            gsap.to([loadingSection, resultsSection], {
+                opacity: 0, y: 30, duration: 0.3,
+                onComplete: () => {
+                    loadingSection.classList.add('hidden');
+                    resultsSection.classList.add('hidden');
+                    captureSection.classList.remove('hidden');
+                    
+                    gsap.fromTo(captureSection, {opacity: 0, y: -30}, {opacity: 1, y: 0, duration: 0.5, ease: "power2.out"});
+                    
+                    previewImage.classList.add('hidden');
+                    cameraPlaceholder.classList.remove('hidden');
+                    
+                    startCameraBtn.innerHTML = '<i class="fas fa-video"></i> <span>Abrir Câmera</span>';
+                    startCameraBtn.classList.remove('hidden');
+                    uploadBtn.innerHTML = '<i class="fas fa-upload"></i> <span>Ou Enviar Arquivo</span>';
+                    uploadBtn.classList.remove('hidden');
+                    analyzeBtn.classList.add('hidden');
+                    captureBtn.classList.add('hidden');
+                    
+                    base64ImageToAnalyze = null;
+                    uploadInput.value = "";
+                }
+            });
         }
 
-        resetBtn.addEventListener('click', resetUI);
+        resetBtn.addEventListener('click', () => {
+            gsap.to(resetBtn, {scale: 0.9, duration: 0.1, yoyo: true, repeat: 1});
+            resetUI();
+        });
 
     </script>
 </body>

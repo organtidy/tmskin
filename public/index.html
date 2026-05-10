@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skincare AI - Análise de Pele</title>
+    <!-- PWA Tags -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#ff7eb3">
+    <link rel="apple-touch-icon" href="./icon-192x192.png">
     <!-- Tailwind CSS for layout -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -601,6 +605,14 @@
             resetUI();
         });
 
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('SW registrado com sucesso:', registration.scope))
+                    .catch(error => console.log('Falha ao registrar SW:', error));
+            });
+        }
     </script>
 </body>
 </html>

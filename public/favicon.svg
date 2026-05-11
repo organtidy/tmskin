@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a0a14"/>
+      <stop offset="100%" stop-color="#0d0610"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#ff7eb3" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ff7eb3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#bg)"/>
+  <circle cx="50" cy="38" r="22" fill="url(#glow)" filter="url(#blur)"/>
+  <!-- Face outline -->
+  <ellipse cx="50" cy="42" rx="16" ry="20" fill="none" stroke="#ff7eb3" stroke-width="2" opacity="0.9"/>
+  <!-- Scan lines -->
+  <line x1="34" y1="36" x2="66" y2="36" stroke="#ff7eb3" stroke-width="1" opacity="0.5"/>
+  <line x1="34" y1="42" x2="66" y2="42" stroke="#ff7eb3" stroke-width="1" opacity="0.7"/>
+  <line x1="34" y1="48" x2="66" y2="48" stroke="#ff7eb3" stroke-width="1" opacity="0.5"/>
+  <!-- Eyes -->
+  <circle cx="43" cy="39" r="2.5" fill="#ff7eb3" opacity="0.9"/>
+  <circle cx="57" cy="39" r="2.5" fill="#ff7eb3" opacity="0.9"/>
+  <!-- Corner marks -->
+  <polyline points="32,26 32,30 36,30" fill="none" stroke="#ff7eb3" stroke-width="2"/>
+  <polyline points="68,26 68,30 64,30" fill="none" stroke="#ff7eb3" stroke-width="2"/>
+  <polyline points="32,74 32,70 36,70" fill="none" stroke="#ff7eb3" stroke-width="2"/>
+  <polyline points="68,74 68,70 64,70" fill="none" stroke="#ff7eb3" stroke-width="2"/>
+  <!-- Dots -->
+  <circle cx="50" cy="72" r="3" fill="#ff7eb3" opacity="0.8"/>
+  <circle cx="42" cy="72" r="1.5" fill="#ff7eb3" opacity="0.5"/>
+  <circle cx="58" cy="72" r="1.5" fill="#ff7eb3" opacity="0.5"/>
+</svg>

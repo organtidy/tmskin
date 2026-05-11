@@ -2,450 +2,176 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skincare AI — Análise Inteligente de Pele</title>
-    <meta name="description" content="Análise cosmética inteligente da sua pele. Descubra os ativos certos para você.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skincare AI — Liquid Glass</title>
     <!-- PWA Tags -->
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#ff7eb3">
+    <meta name="theme-color" content="#162325">
     <link rel="apple-touch-icon" href="./icon-192x192.png">
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <!-- Tailwind CSS for layout -->
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: {
-                        primary: '#ff7eb3',
-                        secondary: '#ff758c',
-                        bgBase: '#e0e5ec',
+                        c1: '#DE443B',
+                        c2: '#006BB4',
+                        c3: '#162325',
                     }
                 }
             }
         }
     </script>
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- GSAP for Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
-        /* Skeuomorphic Base Theme */
         body {
-            background-color: #f0dce8;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #4a4a4a;
+            background-color: #162325;
+            color: #ffffff;
             overflow-x: hidden;
-            cursor: none; /* Custom cursor */
+            cursor: none;
         }
 
-        /* Antigravity Canvas Background */
         #antigravity-bg {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
         }
 
-        .page-wrap, .cursor-glow, .cursor-dot {
-            position: relative;
-            z-index: 1;
-        }
+        .page-wrap, .cursor-glow, .cursor-dot { position: relative; z-index: 1; }
 
-        /* React Bits - Custom Cursor Glow */
         .cursor-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255, 126, 179, 0.4) 0%, rgba(255, 117, 140, 0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            mix-blend-mode: overlay;
-            transition: width 0.3s, height 0.3s;
+            position: fixed; top: 0; left: 0; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(222,68,59,0.3) 0%, rgba(0,107,180,0.1) 40%, rgba(22,35,37,0) 70%);
+            border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+            z-index: 9999; mix-blend-mode: screen; transition: width 0.3s, height 0.3s;
         }
 
         .cursor-dot {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 12px;
-            height: 12px;
-            background: #ff7eb3;
-            border-radius: 50%;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            z-index: 10000;
-            box-shadow: 0 0 10px rgba(255, 126, 179, 0.8),
-                        0 0 20px rgba(255, 126, 179, 0.6);
-            transition: transform 0.1s ease-out;
+            position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+            background: #fff; border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%); z-index: 10000;
+            box-shadow: 0 0 15px 3px rgba(222,68,59,0.8); transition: transform 0.1s ease-out;
         }
 
-        /* Skeuomorphic Card */
-        .skeuo-card {
-            background: rgba(240, 220, 232, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 30px;
-            box-shadow: 
-                20px 20px 60px #d4b8c8,
-                -20px -20px 60px #ffffff;
-            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-            border: 1px solid rgba(255,255,255,0.5);
+        /* Liquid Glass Panels */
+        .glass-panel {
+            background: rgba(22, 35, 37, 0.3);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            border-radius: 28px;
             transform-style: preserve-3d;
         }
 
-        .skeuo-card:hover {
-            box-shadow: 
-                15px 15px 45px #d4b8c8,
-                -15px -15px 45px #ffffff;
-        }
-
-        /* Skeuomorphic Inner Depressed */
-        .skeuo-inner {
-            background: rgba(240, 220, 232, 0.7);
+        .glass-panel-inner {
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 20px;
-            box-shadow: inset 10px 10px 20px #d4b8c8,
-                        inset -10px -10px 20px #ffffff;
-            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Skeuomorphic Buttons */
-        .skeuo-btn {
-            background: #e0e5ec;
-            border-radius: 15px;
-            box-shadow: 
-                8px 8px 16px #bec3c9,
-                -8px -8px 16px #ffffff;
-            transition: all 0.2s ease;
-            color: #ff7eb3;
-            font-weight: 700;
-            position: relative;
+        /* Buttons */
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: #fff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-
-        .skeuo-btn:active, .skeuo-btn.active {
-            box-shadow: 
-                inset 6px 6px 12px #bec3c9,
-                inset -6px -6px 12px #ffffff;
-            color: #ff758c;
-            transform: scale(0.98);
-        }
-
-        .skeuo-btn-primary {
-            background: linear-gradient(145deg, #ff87bd, #e671a1);
-            color: white;
-            box-shadow: 
-                8px 8px 16px #bec3c9,
-                -8px -8px 16px #ffffff;
-            border: none;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .skeuo-btn-primary:active {
-            box-shadow: 
-                inset 6px 6px 12px #c9638c,
-                inset -6px -6px 12px #ff91cc;
-        }
-
-        /* Text Styling */
-        .skeuo-text {
-            color: transparent;
-            background-clip: text;
-            -webkit-background-clip: text;
-            background-image: linear-gradient(to right, #ff758c, #ff7eb3);
-            text-shadow: 2px 2px 4px rgba(255, 126, 179, 0.3);
-            font-weight: 900;
-        }
-
-        .inset-text {
-            color: #8892a0;
-            text-shadow: 1px 1px 1px #fff;
-        }
-
-        /* Custom Loader */
-        .loader-ring {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            box-shadow: 
-                inset 8px 8px 16px #bec3c9,
-                inset -8px -8px 16px #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
         }
 
-        .loader-ring::before {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #ff87bd, #e671a1);
-            box-shadow: 
-                4px 4px 8px rgba(0,0,0,0.1),
-                -4px -4px 8px rgba(255,255,255,0.8);
-            animation: bounceRing 1.5s infinite ease-in-out alternate;
+        .glass-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg); transition: 0.5s;
         }
 
-        @keyframes bounceRing {
-            0% { transform: scale(0.5); opacity: 0.5; }
-            100% { transform: scale(1.2); opacity: 1; }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .glass-btn:hover::before { left: 150%; }
+
+        .glass-btn:active { transform: translateY(1px); }
+
+        .liquid-btn {
+            background: linear-gradient(135deg, rgba(222, 68, 59, 0.85), rgba(0, 107, 180, 0.85));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px; color: white; position: relative; overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 107, 180, 0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .liquid-btn::after {
+            content: ''; position: absolute; inset: 0;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.1"/></svg>');
+            opacity: 0.3; mix-blend-mode: overlay; pointer-events: none;
         }
 
-        /* Float animation */
-        .float {
-            animation: float 6s ease-in-out infinite;
+        .liquid-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(222, 68, 59, 0.4), inset 0 1px 0 rgba(255,255,255,0.6);
+            background: linear-gradient(135deg, rgba(232, 78, 69, 0.95), rgba(10, 117, 190, 0.95));
         }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+
+        /* Typography Effects */
+        .liquid-text {
+            background: linear-gradient(to right, #DE443B, #006BB4, #DE443B, #006BB4);
+            background-size: 300% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shine 4s linear infinite;
         }
+
+        @keyframes shine { to { background-position: 300% center; } }
+
+        /* Loader */
+        .loader-ring {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #DE443B;
+            border-bottom-color: #006BB4;
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Copy Sections */
-        .page-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            padding: 2rem 1rem 4rem;
-        }
-
+        .page-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 3rem 1rem 6rem; }
         .hero-tagline {
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: #ff7eb3;
-            text-shadow: 1px 1px 0 #fff;
-            display: inline-block;
-            background: rgba(255,255,255,0.6);
-            border-radius: 100px;
-            padding: 6px 18px;
-            box-shadow: 4px 4px 8px #d4b8c8, -4px -4px 8px #ffffff;
-            margin-bottom: 1.5rem;
+            font-size: 0.75rem; font-weight: 800; letter-spacing: 0.25em; text-transform: uppercase;
+            color: #fff; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 100px; padding: 6px 18px; margin-bottom: 2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-
         .hero-headline {
-            font-size: clamp(2rem, 7vw, 3rem);
-            font-weight: 900;
-            line-height: 1.1;
-            color: #3d3d3d;
-            text-align: center;
-            margin-bottom: 1.25rem;
+            font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 900; line-height: 1.05; text-align: center; margin-bottom: 1.25rem;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-
-        .hero-headline em {
-            font-style: normal;
-            background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
         .hero-sub {
-            font-size: 1rem;
-            color: #6b7280;
-            text-align: center;
-            max-width: 360px;
-            line-height: 1.7;
-            font-weight: 500;
-            text-shadow: 1px 1px 0 #fff;
-            margin-bottom: 2rem;
+            font-size: 1.1rem; color: rgba(255,255,255,0.7); text-align: center; max-width: 380px;
+            line-height: 1.6; font-weight: 400; margin-bottom: 3rem;
         }
 
-        .benefit-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            width: 100%;
-            margin-bottom: 2.5rem;
-        }
-
-        .benefit-item {
-            background: #e0e5ec;
-            border-radius: 24px;
-            padding: 1.25rem 1rem;
-            box-shadow: 10px 10px 25px #bec3c9, -10px -10px 25px #ffffff;
-            border: 1px solid rgba(255,255,255,0.4);
-            text-align: center;
-            transition: transform 0.2s;
-        }
-
-        .benefit-item:hover {
-            transform: translateY(-3px);
-        }
-
-        .benefit-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #e0e5ec;
-            box-shadow: inset 5px 5px 10px #bec3c9, inset -5px -5px 10px #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.75rem;
-            font-size: 1.2rem;
-        }
-
-        .benefit-title {
-            font-size: 0.8rem;
-            font-weight: 800;
-            color: #4a4a4a;
-            margin-bottom: 0.3rem;
-            text-shadow: 1px 1px 0 #fff;
-        }
-
-        .benefit-desc {
-            font-size: 0.7rem;
-            color: #888;
-            line-height: 1.5;
-        }
-
-        .trust-strip {
-            width: 100%;
-            background: #e0e5ec;
-            border-radius: 24px;
-            box-shadow: 10px 10px 25px #bec3c9, -10px -10px 25px #ffffff;
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            gap: 0.5rem;
-        }
-
-        .trust-item {
-            text-align: center;
-        }
-
-        .trust-number {
-            font-size: 1.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: block;
-        }
-
-        .trust-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            text-shadow: 1px 1px 0 #fff;
-        }
-
-        .trust-divider {
-            width: 1px;
-            height: 40px;
-            background: linear-gradient(to bottom, transparent, #bec3c9, transparent);
-        }
-
-        .section-label {
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #9ca3af;
-            text-shadow: 1px 1px 0 #fff;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: #3d3d3d;
-            text-align: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .how-it-works {
-            width: 100%;
-            margin-bottom: 2.5rem;
-        }
-
-        .step-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .step-number {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #ff87bd, #e671a1);
-            color: white;
-            font-weight: 900;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 5px 5px 12px #bec3c9, -5px -5px 12px #ffffff;
-        }
-
-        .step-content h4 {
-            font-weight: 800;
-            color: #3d3d3d;
-            font-size: 0.95rem;
-            margin-bottom: 0.2rem;
-            text-shadow: 1px 1px 0 #fff;
-        }
-
-        .step-content p {
-            font-size: 0.8rem;
-            color: #888;
-            line-height: 1.5;
-        }
-
-        .disclaimer-bar {
-            width: 100%;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.4);
-            box-shadow: inset 6px 6px 14px #d4b8c8, inset -6px -6px 14px #ffffff;
-            padding: 1rem 1.25rem;
-            display: flex;
-            gap: 0.75rem;
-            align-items: flex-start;
-            margin-top: 1.5rem;
-        }
-
-        .disclaimer-bar p {
-            font-size: 0.7rem;
-            color: #aaa;
-            line-height: 1.5;
-        }
-
-        .copy-scroll-hint {
-            animation: copyPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes copyPulse {
-            0%, 100% { opacity: 0.5; transform: translateY(0); }
-            50% { opacity: 1; transform: translateY(4px); }
-        }
-
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #162325; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-0">
@@ -453,137 +179,113 @@
     <div class="cursor-glow"></div>
     <div class="cursor-dot"></div>
 
-    <!-- Antigravity Animated Background -->
     <canvas id="antigravity-bg"></canvas>
 
     <div class="page-wrap">
-
-        <!-- ============================================ -->
-        <!-- HERO COPY SECTION                           -->
-        <!-- ============================================ -->
-        <section class="max-w-md w-full flex flex-col items-center pt-10 pb-6 gs-reveal">
-            <span class="hero-tagline">✦ Descubra o que sua pele precisa</span>
+        <section class="max-w-md w-full flex flex-col items-center pt-8 pb-8 gs-reveal">
+            <span class="hero-tagline">✦ Nova Geração</span>
             <h1 class="hero-headline">
-                A rotina de pele<br>que foi feita <em>pra você.</em>
+                O futuro da sua <br><em class="liquid-text not-italic">Skincare.</em>
             </h1>
             <p class="hero-sub">
-                Chega de adivinhar o que funciona. Em segundos, você recebe uma análise precisa da sua pele — rosto, corpo, mãos, qualquer área — com os ativos e produtos certos para o seu momento.
-            </p>
-            <p class="copy-scroll-hint text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">
-                <i class="fas fa-chevron-down mr-1"></i> Role e analise agora
+                Análise profunda via inteligência artificial com precisão milimétrica. O que sua pele precisa, agora.
             </p>
         </section>
 
-        <!-- Trust Strip -->
-        <div class="max-w-md w-full gs-reveal">
-            <div class="trust-strip">
-                <div class="trust-item">
-                    <span class="trust-number">100%</span>
-                    <span class="trust-label">Privado</span>
-                </div>
-                <div class="trust-divider"></div>
-                <div class="trust-item">
-                    <span class="trust-number">+30</span>
-                    <span class="trust-label">Ativos mapeados</span>
-                </div>
-                <div class="trust-divider"></div>
-                <div class="trust-item">
-                    <span class="trust-number">Grátis</span>
-                    <span class="trust-label">Sem cadastro</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================ -->
-        <!-- APP SECTION (não alterar nada abaixo)       -->
-        <!-- ============================================ -->
+        <!-- APP SECTION -->
         <div class="max-w-md w-full relative z-10">
-
         <main class="w-full relative">
             
             <!-- Capture Section -->
-            <section id="capture-section" class="skeuo-card p-8 flex flex-col items-center gap-6 gs-reveal">
+            <section id="capture-section" class="glass-panel p-8 flex flex-col items-center gap-6 gs-reveal">
                 
-                <div id="video-container" class="skeuo-inner w-full aspect-[3/4] relative overflow-hidden flex items-center justify-center">
-                    <div id="camera-placeholder" class="text-gray-400 flex flex-col items-center">
-                        <div class="w-20 h-20 rounded-full skeuo-btn flex items-center justify-center mb-4 pointer-events-none">
-                            <i class="fas fa-camera text-3xl text-gray-400" style="text-shadow: 1px 1px 0 #fff"></i>
+                <div id="video-container" class="glass-panel-inner w-full aspect-[3/4] relative overflow-hidden flex items-center justify-center">
+                    <div id="camera-placeholder" class="text-white/50 flex flex-col items-center">
+                        <div class="w-20 h-20 rounded-full glass-btn flex items-center justify-center mb-4 pointer-events-none border-white/20">
+                            <i class="fas fa-camera text-3xl"></i>
                         </div>
-                        <span class="inset-text font-bold">Câmera Inativa</span>
+                        <span class="font-bold tracking-widest uppercase text-xs">Câmera Inativa</span>
                     </div>
                     
-                    <video id="videoElement" class="absolute inset-0 w-full h-full object-cover hidden rounded-2xl" autoplay playsinline></video>
+                    <video id="videoElement" class="absolute inset-0 w-full h-full object-cover hidden" autoplay playsinline></video>
                     <canvas id="canvasElement" class="hidden"></canvas>
-                    <img id="previewImage" class="absolute inset-0 w-full h-full object-cover hidden rounded-2xl" />
+                    <img id="previewImage" class="absolute inset-0 w-full h-full object-cover hidden" />
                 </div>
 
-                <div class="w-full flex flex-col gap-4">
-                    <button id="startCameraBtn" class="skeuo-btn w-full py-4 text-lg flex items-center justify-center gap-3">
+                <div class="w-full flex flex-col gap-4 relative z-20">
+                    <button id="startCameraBtn" class="glass-btn w-full py-4 text-lg flex items-center justify-center gap-3 font-semibold">
                         <i class="fas fa-video"></i> <span>Abrir Câmera</span>
                     </button>
                     
-                    <button id="captureBtn" class="skeuo-btn-primary w-full py-4 text-lg flex items-center justify-center gap-3 hidden">
-                        <i class="fas fa-camera-retro"></i> <span>Capturar Foto</span>
+                    <button id="captureBtn" class="liquid-btn w-full py-4 text-lg flex items-center justify-center gap-3 hidden font-semibold">
+                        <i class="fas fa-crosshairs"></i> <span>Analisar Agora</span>
                     </button>
                     
                     <div class="relative w-full">
                         <input type="file" id="uploadInput" accept="image/*" class="hidden" />
-                        <button id="uploadBtn" class="skeuo-btn w-full py-4 text-lg flex items-center justify-center gap-3 text-gray-500">
+                        <button id="uploadBtn" class="glass-btn w-full py-4 text-sm flex items-center justify-center gap-3 text-white/60 hover:text-white">
                             <i class="fas fa-upload"></i> <span>Ou Enviar Arquivo</span>
                         </button>
                     </div>
 
-                    <button id="analyzeBtn" class="skeuo-btn-primary w-full py-4 text-lg flex items-center justify-center gap-3 hidden mt-4">
-                        <i class="fas fa-magic"></i> <span>Analisar Pele</span>
+                    <button id="analyzeBtn" class="liquid-btn w-full py-4 text-lg flex items-center justify-center gap-3 hidden mt-2 font-bold tracking-wide">
+                        <i class="fas fa-bolt"></i> <span>Processar Análise</span>
                     </button>
                 </div>
             </section>
 
             <!-- Loading State -->
-            <section id="loading-section" class="hidden skeuo-card p-10 flex flex-col items-center justify-center text-center absolute top-0 left-0 w-full">
+            <section id="loading-section" class="hidden glass-panel p-12 flex flex-col items-center justify-center text-center absolute top-0 left-0 w-full min-h-[500px]">
                 <div class="loader-ring mb-8"></div>
-                <h2 class="text-xl font-extrabold skeuo-text mb-2">Processando IA...</h2>
-                <p class="text-sm inset-text">Avaliando textura, poros e hidratação.</p>
+                <h2 class="text-2xl font-black liquid-text mb-3">Sintetizando...</h2>
+                <p class="text-sm text-white/60 font-medium">Extraindo microdados de textura, hidratação e relevo da derme.</p>
             </section>
 
             <!-- Results Section -->
             <section id="results-section" class="hidden flex flex-col gap-6 absolute top-0 left-0 w-full">
                 
-                <button id="resetBtn" class="skeuo-btn w-12 h-12 rounded-full self-start flex items-center justify-center text-gray-500 mb-2">
+                <button id="resetBtn" class="glass-btn w-12 h-12 rounded-full self-start flex items-center justify-center text-white mb-2">
                     <i class="fas fa-arrow-left"></i>
                 </button>
 
                 <!-- AI Analysis Card -->
-                <div class="skeuo-card p-6 tilt-card">
-                    <div class="flex items-center gap-3 mb-4 border-b border-gray-300 pb-4 border-opacity-50">
-                        <div class="w-10 h-10 skeuo-inner rounded-full flex items-center justify-center">
-                            <i class="fas fa-robot text-pink-400"></i>
+                <div class="glass-panel p-6 tilt-card relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-c2/30 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                    <div class="absolute bottom-0 left-0 w-32 h-32 bg-c1/30 rounded-full blur-3xl -ml-10 -mb-10"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-5 border-b border-white/10 pb-4">
+                            <div class="w-12 h-12 glass-panel-inner rounded-xl flex items-center justify-center bg-white/5">
+                                <i class="fas fa-dna text-c1 text-xl"></i>
+                            </div>
+                            <h2 class="text-2xl font-black text-white tracking-tight">Diagnóstico</h2>
                         </div>
-                        <h2 class="text-xl font-extrabold text-gray-700">Diagnóstico</h2>
-                    </div>
-                    
-                    <p id="result-message" class="text-gray-600 text-sm leading-relaxed mb-6 font-medium"></p>
-                    
-                    <div class="skeuo-inner p-5 mb-6">
-                        <h3 class="text-xs font-bold text-pink-500 uppercase tracking-widest mb-3" style="text-shadow: 1px 1px 0px #fff">Pontos de Atenção</h3>
-                        <ul id="result-points" class="text-sm text-gray-600 space-y-2 font-medium"></ul>
-                    </div>
+                        
+                        <p id="result-message" class="text-white/80 text-base md:text-sm leading-relaxed mb-6 font-medium"></p>
+                        
+                        <div class="glass-panel-inner p-5 mb-6 bg-black/30">
+                            <h3 class="text-xs font-black text-c1 uppercase tracking-[0.2em] mb-4">Pontos de Atenção</h3>
+                            <ul id="result-points" class="text-base md:text-sm text-white/90 space-y-3 font-medium"></ul>
+                        </div>
 
-                    <div class="flex gap-4 text-sm justify-between">
-                        <div class="skeuo-btn p-3 rounded-xl flex-1 text-center pointer-events-none">
-                            <span class="block text-[10px] uppercase text-gray-400 font-bold mb-1">Tipo</span>
-                            <span id="result-type" class="font-black text-gray-700"></span>
-                        </div>
-                        <div class="skeuo-btn p-3 rounded-xl flex-1 text-center pointer-events-none">
-                            <span class="block text-[10px] uppercase text-gray-400 font-bold mb-1">Área</span>
-                            <span id="result-body-part" class="font-black text-gray-700"></span>
+                        <div class="flex gap-4 text-base md:text-sm justify-between">
+                            <div class="glass-btn p-3 rounded-xl flex-1 text-center pointer-events-none bg-white/5">
+                                <span class="block text-xs uppercase text-white/50 font-bold mb-1">Perfil</span>
+                                <span id="result-type" class="font-black text-white"></span>
+                            </div>
+                            <div class="glass-btn p-3 rounded-xl flex-1 text-center pointer-events-none bg-white/5">
+                                <span class="block text-xs uppercase text-white/50 font-bold mb-1">Mapeamento</span>
+                                <span id="result-body-part" class="font-black text-white"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recommended Products -->
-                <div>
-                    <h3 class="text-lg font-extrabold text-gray-700 mb-4 ml-2 inset-text">Rotina Sugerida</h3>
+                <div class="mt-4">
+                    <h3 class="text-lg font-black text-white mb-4 ml-2 flex items-center gap-2">
+                        <i class="fas fa-flask text-c2"></i> Protocolo Recomendado
+                    </h3>
                     <div id="products-container" class="flex flex-col gap-4">
                         <!-- Injected Cards -->
                     </div>
@@ -591,105 +293,48 @@
                 
             </section>
         </main>
-        </div><!-- /app div -->
-
-        <!-- ============================================ -->
-        <!-- BENEFITS SECTION                            -->
-        <!-- ============================================ -->
-        <section class="max-w-md w-full mt-12 gs-reveal">
-            <p class="section-label">Por que funciona</p>
-            <h2 class="section-title">Uma análise que vai <em style="font-style:normal;color:#ff7eb3;">além</em> do espelho</h2>
-            <p class="text-sm text-center mb-8" style="color:#9ca3af;text-shadow:1px 1px 0 #fff;">Avaliamos o que o olho nu não consegue ver — e traduzimos isso em ação.</p>
-
-            <div class="benefit-grid">
-                <div class="benefit-item gs-reveal">
-                    <div class="benefit-icon">🔬</div>
-                    <div class="benefit-title">Análise Profunda</div>
-                    <div class="benefit-desc">Textura, oleosidade, manchas, poros e hidratação — qualquer região do corpo.</div>
-                </div>
-                <div class="benefit-item gs-reveal">
-                    <div class="benefit-icon">🧴</div>
-                    <div class="benefit-title">Ativos Certeiros</div>
-                    <div class="benefit-desc">Nada genérico. Os princípios ativos exatos que a sua pele pede neste momento.</div>
-                </div>
-                <div class="benefit-item gs-reveal">
-                    <div class="benefit-icon">🛡️</div>
-                    <div class="benefit-title">Privacidade Total</div>
-                    <div class="benefit-desc">Sua foto é analisada e descartada. Zero armazenamento. Sem cadastro.</div>
-                </div>
-                <div class="benefit-item gs-reveal">
-                    <div class="benefit-icon">✨</div>
-                    <div class="benefit-title">Prevenção + Correção</div>
-                    <div class="benefit-desc">O que tratar hoje e o que prevenir para manter a pele saudável no futuro.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============================================ -->
-        <!-- HOW IT WORKS                                -->
-        <!-- ============================================ -->
-        <section class="max-w-md w-full mt-4 gs-reveal">
-            <p class="section-label">Como usar</p>
-            <h2 class="section-title">Simples assim</h2>
-            <div class="how-it-works mt-6">
-                <div class="step-item">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h4>Tire uma foto ou faça upload</h4>
-                        <p>Pode ser rosto, pescoço, mãos, colo — qualquer área. Quanto mais nítida, mais precisa a análise.</p>
-                    </div>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h4>Aguarde a análise (segundos)</h4>
-                        <p>A tecnologia avalia tipo, textura, pontos de atenção e necessidades cosméticas em tempo real.</p>
-                    </div>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h4>Receba seu diagnóstico + produtos</h4>
-                        <p>Relatório personalizado com os melhores ativos para seu caso e produtos prontos para comprar.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Disclaimer Legal -->
-        <div class="max-w-md w-full gs-reveal mb-8">
-            <div class="disclaimer-bar">
-                <i class="fas fa-info-circle text-gray-300 mt-0.5 text-lg flex-shrink-0"></i>
-                <p>Esta ferramenta realiza análise <strong>cosmética</strong> — foco em hidratação, textura, manchas superficiais e acne estética. Não substitui avaliação médica ou dermatológica. Para alterações preocupantes, consulte um profissional.</p>
-            </div>
         </div>
 
-    </div><!-- /page-wrap -->
+        <section class="max-w-md w-full mt-24 gs-reveal text-center">
+            <h2 class="text-3xl font-black mb-10">Além do <span class="liquid-text">Espelho</span></h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass-panel p-5 text-center gs-reveal hover:-translate-y-2 transition-transform">
+                    <i class="fas fa-microscope text-3xl text-c1 mb-3"></i>
+                    <h3 class="font-bold text-base md:text-sm mb-2">Deep Scan</h3>
+                    <p class="text-sm md:text-xs text-white/60">Análise de poros e textura invisíveis a olho nu.</p>
+                </div>
+                <div class="glass-panel p-5 text-center gs-reveal hover:-translate-y-2 transition-transform">
+                    <i class="fas fa-shield-alt text-3xl text-c2 mb-3"></i>
+                    <h3 class="font-bold text-base md:text-sm mb-2">Privacidade</h3>
+                    <p class="text-sm md:text-xs text-white/60">Processamento em RAM. Zero rastros deixados.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
 
     <script>
-        // Custom Cursor Logic
+        // Custom Cursor
         const cursorGlow = document.querySelector('.cursor-glow');
         const cursorDot = document.querySelector('.cursor-dot');
-        
         window.addEventListener('mousemove', (e) => {
             gsap.to(cursorGlow, { x: e.clientX, y: e.clientY, duration: 0.8, ease: "power2.out" });
             gsap.to(cursorDot, { x: e.clientX, y: e.clientY, duration: 0.1, ease: "none" });
         });
 
-        // 3D Tilt Effect on cards
+        // 3D Tilt Effect
         function initTilt() {
-            const cards = document.querySelectorAll('.tilt-card, .skeuo-card');
+            const cards = document.querySelectorAll('.tilt-card, .glass-panel, .glass-btn');
             cards.forEach(card => {
                 card.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
-                    
                     const centerX = rect.width / 2;
                     const centerY = rect.height / 2;
-                    
-                    const rotateX = ((y - centerY) / centerY) * -5;
-                    const rotateY = ((x - centerX) / centerX) * 5;
+                    const rotateX = ((y - centerY) / centerY) * -8;
+                    const rotateY = ((x - centerX) / centerX) * 8;
 
                     gsap.to(card, {
                         rotateX: rotateX,
@@ -699,31 +344,18 @@
                         ease: "power1.out"
                     });
                 });
-
                 card.addEventListener('mouseleave', () => {
-                    gsap.to(card, {
-                        rotateX: 0,
-                        rotateY: 0,
-                        duration: 0.7,
-                        ease: "elastic.out(1, 0.5)"
-                    });
+                    gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.7, ease: "elastic.out(1, 0.5)" });
                 });
             });
         }
         initTilt();
 
-        // Initial Animation Reveal
-        gsap.from(".gs-reveal", {
-            y: 50,
-            opacity: 0,
-            duration: 1,
-            stagger: 0.2,
-            ease: "back.out(1.7)"
-        });
+        // Reveal Animations
+        gsap.from(".gs-reveal", { y: 60, opacity: 0, duration: 1.2, stagger: 0.15, ease: "expo.out", delay: 0.2 });
 
-        // API URL
+        // Logic
         const WORKER_URL = "https://tmskin-backend.organtidy.workers.dev/api/analyze";
-
         const video = document.getElementById('videoElement');
         const canvas = document.getElementById('canvasElement');
         const previewImage = document.getElementById('previewImage');
@@ -766,33 +398,24 @@
         captureBtn.addEventListener('click', () => {
             gsap.to(captureBtn, {scale: 0.95, duration: 0.1, yoyo: true, repeat: 1});
             
-            // Flash effect
             const flash = document.createElement('div');
-            flash.style.position = 'absolute';
-            flash.style.inset = '0';
-            flash.style.backgroundColor = 'white';
-            flash.style.zIndex = '50';
-            flash.style.borderRadius = '1rem';
+            flash.style.position = 'absolute'; flash.style.inset = '0'; flash.style.backgroundColor = 'white';
+            flash.style.zIndex = '50'; flash.style.borderRadius = '1rem';
             document.getElementById('video-container').appendChild(flash);
             gsap.to(flash, {opacity: 0, duration: 0.5, onComplete: () => flash.remove()});
 
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
             base64ImageToAnalyze = canvas.toDataURL('image/jpeg', 0.8);
             
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
+            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
 
             video.classList.add('hidden');
             previewImage.src = base64ImageToAnalyze;
             previewImage.classList.remove('hidden');
             
             captureBtn.classList.add('hidden');
-            
             startCameraBtn.innerHTML = '<i class="fas fa-redo"></i> <span>Retirar</span>';
             startCameraBtn.classList.remove('hidden');
             analyzeBtn.classList.remove('hidden');
@@ -811,7 +434,6 @@
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     base64ImageToAnalyze = event.target.result;
-                    
                     cameraPlaceholder.classList.add('hidden');
                     video.classList.add('hidden');
                     previewImage.src = base64ImageToAnalyze;
@@ -832,37 +454,26 @@
             if (!base64ImageToAnalyze) return;
             
             gsap.to(captureSection, { 
-                opacity: 0, y: -50, duration: 0.4, ease: "power2.in", 
+                opacity: 0, y: -50, scale: 0.95, duration: 0.5, ease: "power3.in", 
                 onComplete: () => {
                     captureSection.classList.add('hidden');
                     loadingSection.classList.remove('hidden');
-                    gsap.fromTo(loadingSection, {opacity: 0, scale: 0.9}, {opacity: 1, scale: 1, duration: 0.5});
+                    gsap.fromTo(loadingSection, {opacity: 0, scale: 0.9}, {opacity: 1, scale: 1, duration: 0.6, ease: "expo.out"});
                 }
             });
 
             try {
                 const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: base64ImageToAnalyze })
                 });
 
                 const data = await response.json();
-
                 if (!response.ok) throw new Error(data.error || 'Erro desconhecido');
-                if (data.analise.erro_imagem) {
-                    alert(`Erro da IA: ${data.analise.erro_imagem}`);
-                    resetUI();
-                    return;
-                }
-                if (!data.analise.analise_valida) {
-                    alert("A IA não conseguiu validar a análise.");
-                    resetUI();
-                    return;
-                }
+                if (data.analise.erro_imagem) { alert(`Erro da IA: ${data.analise.erro_imagem}`); resetUI(); return; }
+                if (!data.analise.analise_valida) { alert("A IA não conseguiu validar a análise."); resetUI(); return; }
 
                 renderResults(data);
-
             } catch (error) {
                 alert(`Falha ao conectar: ${error.message}`);
                 resetUI();
@@ -871,7 +482,6 @@
 
         function renderResults(data) {
             const { analise, produtos } = data;
-
             document.getElementById('result-message').innerText = analise.mensagem_usuario;
             document.getElementById('result-type').innerText = analise.tipo_pele_aparente || '-';
             document.getElementById('result-body-part').innerText = analise.parte_do_corpo || '-';
@@ -879,60 +489,43 @@
             const pointsContainer = document.getElementById('result-points');
             pointsContainer.innerHTML = '';
             (analise.pontos_de_atencao || []).forEach(point => {
-                pointsContainer.innerHTML += `<li class="flex items-center gap-2"><i class="fas fa-check-circle text-pink-400"></i> ${point}</li>`;
+                pointsContainer.innerHTML += `<li class="flex items-start gap-3"><i class="fas fa-circle text-[8px] mt-1.5 text-c1"></i> <span class="flex-1">${point}</span></li>`;
             });
 
             const productsContainer = document.getElementById('products-container');
             productsContainer.innerHTML = '';
 
             if (produtos && produtos.length > 0) {
-                produtos.forEach((prod, i) => {
-                    const card = `
-                    <div class="skeuo-card p-4 flex gap-4 items-center tilt-card gs-product" style="opacity: 0;">
-                        <div class="w-16 h-16 skeuo-inner rounded-2xl flex-shrink-0 overflow-hidden flex items-center justify-center p-2">
-                            <img src="${prod.url_imagem}" alt="${prod.nome}" class="w-full h-full object-contain mix-blend-multiply">
+                produtos.forEach(prod => {
+                    productsContainer.innerHTML += `
+                    <div class="glass-panel p-4 flex gap-4 items-center tilt-card gs-product" style="opacity: 0;">
+                        <div class="w-16 h-16 glass-panel-inner rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center p-2 bg-white/10">
+                            <img src="${prod.url_imagem}" alt="${prod.nome}" class="w-full h-full object-contain">
                         </div>
                         <div class="flex-grow">
-                            <span class="text-[10px] font-black text-pink-400 uppercase tracking-widest">${prod.marca}</span>
-                            <h4 class="text-sm font-extrabold text-gray-700 leading-tight mt-0.5">${prod.nome}</h4>
+                            <span class="text-xs font-black text-c1 uppercase tracking-[0.1em]">${prod.marca}</span>
+                            <h4 class="text-base md:text-sm font-bold text-white leading-tight mt-0.5">${prod.nome}</h4>
                         </div>
-                        <a href="${prod.link_compra}" target="_blank" class="w-10 h-10 skeuo-btn rounded-full flex items-center justify-center text-pink-500 hover:text-pink-600 flex-shrink-0">
+                        <a href="${prod.link_compra}" target="_blank" class="w-10 h-10 glass-btn rounded-full flex items-center justify-center text-white hover:text-c1 flex-shrink-0">
                             <i class="fas fa-shopping-bag"></i>
                         </a>
-                    </div>
-                    `;
-                    productsContainer.insertAdjacentHTML('beforeend', card);
+                    </div>`;
                 });
             } else {
-                productsContainer.innerHTML = `<div class="skeuo-inner p-6 text-center text-sm font-bold inset-text rounded-2xl">Nenhum produto cadastrado para: ${analise.ativos_recomendados.join(', ')}</div>`;
+                productsContainer.innerHTML = `<div class="glass-panel-inner p-6 text-center text-sm font-bold text-white/50 rounded-2xl">Nenhum produto: ${analise.ativos_recomendados.join(', ')}</div>`;
             }
             
-            initTilt(); // Re-bind tilt to new cards
+            initTilt();
 
             gsap.to(loadingSection, {
                 opacity: 0, scale: 0.9, duration: 0.4, 
                 onComplete: () => {
                     loadingSection.classList.add('hidden');
                     resultsSection.classList.remove('hidden');
-                    
-                    // Animate results in
-                    gsap.fromTo(resultsSection, 
-                        {opacity: 0, y: 50}, 
-                        {opacity: 1, y: 0, duration: 0.6, ease: "power2.out"}
-                    );
-                    
-                    // Stagger products
-                    gsap.to(".gs-product", {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.5,
-                        stagger: 0.15,
-                        ease: "back.out(1.5)",
-                        delay: 0.3
-                    });
+                    gsap.fromTo(resultsSection, {opacity: 0, y: 50}, {opacity: 1, y: 0, duration: 0.8, ease: "expo.out"});
+                    gsap.to(".gs-product", { opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: "back.out(1.2)", delay: 0.2 });
                 }
             });
-            
             base64ImageToAnalyze = null;
         }
 
@@ -940,24 +533,18 @@
             gsap.to([loadingSection, resultsSection], {
                 opacity: 0, y: 30, duration: 0.3,
                 onComplete: () => {
-                    loadingSection.classList.add('hidden');
-                    resultsSection.classList.add('hidden');
+                    loadingSection.classList.add('hidden'); resultsSection.classList.add('hidden');
                     captureSection.classList.remove('hidden');
-                    
                     gsap.fromTo(captureSection, {opacity: 0, y: -30}, {opacity: 1, y: 0, duration: 0.5, ease: "power2.out"});
                     
-                    previewImage.classList.add('hidden');
-                    cameraPlaceholder.classList.remove('hidden');
-                    
+                    previewImage.classList.add('hidden'); cameraPlaceholder.classList.remove('hidden');
                     startCameraBtn.innerHTML = '<i class="fas fa-video"></i> <span>Abrir Câmera</span>';
                     startCameraBtn.classList.remove('hidden');
                     uploadBtn.innerHTML = '<i class="fas fa-upload"></i> <span>Ou Enviar Arquivo</span>';
                     uploadBtn.classList.remove('hidden');
-                    analyzeBtn.classList.add('hidden');
-                    captureBtn.classList.add('hidden');
+                    analyzeBtn.classList.add('hidden'); captureBtn.classList.add('hidden');
                     
-                    base64ImageToAnalyze = null;
-                    uploadInput.value = "";
+                    base64ImageToAnalyze = null; uploadInput.value = "";
                 }
             });
         }
@@ -968,102 +555,116 @@
         });
 
         // ============================================
-        // ANTIGRAVITY BACKGROUND ANIMATION
+        // BALATRO SWIRL BACKGROUND SHADER (WEBGL)
         // ============================================
         (function() {
             const canvas = document.getElementById('antigravity-bg');
-            const ctx = canvas.getContext('2d');
-            let W = canvas.width = window.innerWidth;
-            let H = canvas.height = window.innerHeight;
+            const gl = canvas.getContext('webgl', { alpha: false });
+            if (!gl) return;
 
-            window.addEventListener('resize', () => {
-                W = canvas.width = window.innerWidth;
-                H = canvas.height = window.innerHeight;
-            });
+            const vsSource = `
+                attribute vec2 position;
+                void main() { gl_Position = vec4(position, 0.0, 1.0); }
+            `;
 
-            // Color palette — warm pinks and roses
-            const palette = [
-                'rgba(255, 126, 179, alpha)',   // hot pink
-                'rgba(255, 117, 140, alpha)',   // rose
-                'rgba(255, 182, 210, alpha)',   // light pink
-                'rgba(240, 100, 160, alpha)',   // deep pink
-                'rgba(255, 210, 230, alpha)',   // blush
-                'rgba(230, 80, 130, alpha)',    // vivid rose
-            ];
+            const fsSource = `
+                precision highp float;
+                uniform vec2 u_resolution;
+                uniform float u_time;
 
-            function randColor(alpha) {
-                const c = palette[Math.floor(Math.random() * palette.length)];
-                return c.replace('alpha', alpha);
+                void main() {
+                    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                    
+                    // Pixel Filter
+                    float pixels = 700.0;
+                    uv = floor(uv * pixels) / pixels;
+                    
+                    uv = uv * 2.0 - 1.0;
+                    uv.x *= u_resolution.x / u_resolution.y;
+
+                    float r = length(uv);
+                    float a = atan(uv.y, uv.x);
+
+                    // Spin settings
+                    float time = u_time * 0.25; // spinAmount
+                    a += sin(r * 5.0 - time * 2.0) * 0.5;
+                    a -= time * 2.0; // spinRotation (-2)
+
+                    vec2 pos = vec2(cos(a), sin(a)) * r;
+                    float w = sin(pos.x * 10.0 + time) * cos(pos.y * 10.0 + time);
+                    
+                    // Colors
+                    vec3 col1 = vec3(222.0/255.0, 68.0/255.0, 59.0/255.0); // #DE443B
+                    vec3 col2 = vec3(0.0/255.0, 107.0/255.0, 180.0/255.0); // #006BB4
+                    vec3 col3 = vec3(22.0/255.0, 35.0/255.0, 37.0/255.0); // #162325
+
+                    vec3 color = mix(col1, col2, smoothstep(-1.0, 1.0, w));
+                    color = mix(color, col3, smoothstep(0.0, 1.5, r));
+
+                    // Lighting & Contrast
+                    color = (color - 0.5) * 3.5 + 0.5; // contrast 3.5
+                    color += 0.4; // lighting 0.4
+
+                    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
+                }
+            `;
+
+            function compileShader(type, source) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error(gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
             }
 
-            class Orb {
-                constructor() {
-                    this.reset();
-                }
-                reset() {
-                    this.x = Math.random() * W;
-                    this.y = H + Math.random() * 200;           // start below screen
-                    this.radius = 8 + Math.random() * 55;       // varied sizes
-                    this.speedY = 0.15 + Math.random() * 0.5;   // slow float up
-                    this.speedX = (Math.random() - 0.5) * 0.4;  // gentle horizontal drift
-                    this.opacity = 0.04 + Math.random() * 0.14; // subtle transparency
-                    this.color = randColor(this.opacity);
-                    this.blur = 20 + Math.random() * 60;
-                    this.phase = Math.random() * Math.PI * 2;   // wave phase
-                    this.waveAmp = 0.4 + Math.random() * 1.2;  // horizontal wave amplitude
-                    this.waveFreq = 0.003 + Math.random() * 0.008;
-                    this.tick = 0;
-                }
-                update() {
-                    this.tick++;
-                    this.y -= this.speedY;
-                    this.x += this.speedX + Math.sin(this.tick * this.waveFreq + this.phase) * this.waveAmp * 0.1;
-                    if (this.y + this.radius < -100) this.reset();
-                }
-                draw() {
-                    ctx.save();
-                    ctx.filter = `blur(${this.blur}px)`;
-                    ctx.globalAlpha = this.opacity;
-                    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-                    grad.addColorStop(0, randColor(this.opacity));
-                    grad.addColorStop(1, 'rgba(255,126,179,0)');
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = grad;
-                    ctx.fill();
-                    ctx.restore();
-                }
+            const vs = compileShader(gl.VERTEX_SHADER, vsSource);
+            const fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
+            const program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1, -1, 1, -1, -1, 1,
+                -1, 1, 1, -1, 1, 1
+            ]), gl.STATIC_DRAW);
+
+            const posLoc = gl.getAttribLocation(program, "position");
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            const resLoc = gl.getUniformLocation(program, "u_resolution");
+            const timeLoc = gl.getUniformLocation(program, "u_time");
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                gl.uniform2f(resLoc, canvas.width, canvas.height);
             }
+            window.addEventListener('resize', resize);
+            resize();
 
-            // Spawn orbs — more = richer, but keep performance ok
-            const orbs = Array.from({ length: 40 }, () => {
-                const o = new Orb();
-                o.y = Math.random() * H; // spread initial y across full screen
-                return o;
-            });
-
-            function animate() {
-                // Soft background fill (preserves body color, subtle trail effect)
-                ctx.fillStyle = 'rgba(240, 220, 232, 0.08)';
-                ctx.fillRect(0, 0, W, H);
-
-                orbs.forEach(o => {
-                    o.update();
-                    o.draw();
-                });
-
-                requestAnimationFrame(animate);
+            const startTime = performance.now();
+            function render() {
+                gl.uniform1f(timeLoc, (performance.now() - startTime) / 1000);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                requestAnimationFrame(render);
             }
-
-            animate();
+            render();
         })();
 
-        // PWA Service Worker Registration
+        // PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => console.log('SW registrado com sucesso:', registration.scope))
-                    .catch(error => console.log('Falha ao registrar SW:', error));
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
             });
         }
     </script>

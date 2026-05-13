@@ -991,8 +991,8 @@
         class Engine {
             constructor(options) {
                 this.canvas = document.getElementById(options.id);
-                this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: false, alpha: true });
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+                this.renderer.setPixelRatio(window.devicePixelRatio);
                 this.scene = new Scene();
                 this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
                 this.camera.position.z = 20;
@@ -1029,8 +1029,8 @@
                 this.engine = engine;
                 this.config = { count: 50, gravity: 0.5, friction: 0.99, wallBounce: 0.8, colors: ["#5227FF","#7cff67","#ff6b6b"], ...config };
                 
-                const geometry = new SphereGeometry(0.8, 16, 12);
-                const material = new MeshStandardMaterial({ roughness: 0.2, metalness: 0.1 });
+                const geometry = new SphereGeometry(0.8, 32, 24);
+                const material = new MeshStandardMaterial({ roughness: 0.1, metalness: 0.2 });
                 this.mesh = new InstancedMesh(geometry, material, this.config.count);
                 
                 this.positions = new Float32Array(this.config.count * 3);

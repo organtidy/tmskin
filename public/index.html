@@ -241,7 +241,7 @@
         }
 
         .hero-headline {
-            font-size: clamp(2rem, 7vw, 3rem);
+            font-size: clamp(2.2rem, 8vw, 3.5rem);
             font-weight: 900;
             line-height: 1.1;
             color: #3d3d3d;
@@ -258,7 +258,7 @@
         }
 
         .hero-sub {
-            font-size: 1rem;
+            font-size: 1.15rem;
             color: #6b7280;
             text-align: center;
             max-width: 360px;
@@ -304,7 +304,7 @@
         }
 
         .benefit-title {
-            font-size: 0.8rem;
+            font-size: 1rem;
             font-weight: 800;
             color: #4a4a4a;
             margin-bottom: 0.3rem;
@@ -312,7 +312,7 @@
         }
 
         .benefit-desc {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: #888;
             line-height: 1.5;
         }
@@ -335,7 +335,7 @@
         }
 
         .trust-number {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 900;
             background: linear-gradient(135deg, #ff758c, #ff7eb3);
             -webkit-background-clip: text;
@@ -345,7 +345,7 @@
         }
 
         .trust-label {
-            font-size: 0.65rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: #9ca3af;
             text-transform: uppercase;
@@ -371,7 +371,7 @@
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 900;
             color: #3d3d3d;
             text-align: center;
@@ -408,13 +408,13 @@
         .step-content h4 {
             font-weight: 800;
             color: #3d3d3d;
-            font-size: 0.95rem;
+            font-size: 1.1rem;
             margin-bottom: 0.2rem;
             text-shadow: 1px 1px 0 #fff;
         }
 
         .step-content p {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             color: #888;
             line-height: 1.5;
         }
@@ -562,11 +562,11 @@
                         <h2 class="text-xl font-extrabold text-gray-700">Diagnóstico</h2>
                     </div>
                     
-                    <p id="result-message" class="text-gray-600 text-sm leading-relaxed mb-6 font-medium"></p>
+                    <p id="result-message" class="text-gray-600 text-base leading-relaxed mb-6 font-medium"></p>
                     
                     <div class="skeuo-inner p-5 mb-6">
                         <h3 class="text-xs font-bold text-pink-500 uppercase tracking-widest mb-3" style="text-shadow: 1px 1px 0px #fff">Pontos de Atenção</h3>
-                        <ul id="result-points" class="text-sm text-gray-600 space-y-2 font-medium"></ul>
+                        <ul id="result-points" class="text-base text-gray-600 space-y-2 font-medium"></ul>
                     </div>
 
                     <div class="flex gap-4 text-sm justify-between">
@@ -1058,12 +1058,21 @@
             animate();
         })();
 
-        // PWA Service Worker Registration
+        // PWA Service Worker Registration & Auto-Update
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
                     .then(registration => console.log('SW registrado com sucesso:', registration.scope))
                     .catch(error => console.log('Falha ao registrar SW:', error));
+                
+                // Recarrega a página automaticamente quando um novo SW assume o controle
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        window.location.reload();
+                        refreshing = true;
+                    }
+                });
             });
         }
     </script>

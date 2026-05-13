@@ -33,6 +33,15 @@
     <!-- GSAP for Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/examples/jsm/environments/RoomEnvironment.js": "https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js"
+      }
+    }
+    </script>
+
     <style>
         /* Skeuomorphic Base Theme */
         body {
@@ -966,98 +975,298 @@
             gsap.to(resetBtn, {scale: 0.9, duration: 0.1, yoyo: true, repeat: 1});
             resetUI();
         });
+    </script>
 
-        // ============================================
-        // ANTIGRAVITY BACKGROUND ANIMATION
-        // ============================================
-        (function() {
-            const canvas = document.getElementById('antigravity-bg');
-            const ctx = canvas.getContext('2d');
-            let W = canvas.width = window.innerWidth;
-            let H = canvas.height = window.innerHeight;
+    <!-- ============================================ -->
+    <!-- BALLPIT BACKGROUND ANIMATION (React Bits)    -->
+    <!-- ============================================ -->
+    <script type="module">
+        import {
+                Vector3, MeshPhysicalMaterial, InstancedMesh, Clock, AmbientLight, SphereGeometry, ShaderChunk, Scene, Color, Object3D, SRGBColorSpace, MathUtils, PMREMGenerator, Vector2, WebGLRenderer, PerspectiveCamera, PointLight, ACESFilmicToneMapping, Plane, Raycaster
+            } from 'three';
+            import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
-            window.addEventListener('resize', () => {
-                W = canvas.width = window.innerWidth;
-                H = canvas.height = window.innerHeight;
-            });
+            // Aliases to match the provided source logic
+            const a = Vector3, c = MeshPhysicalMaterial, d = InstancedMesh, e = Clock, f = AmbientLight, g = SphereGeometry, h = ShaderChunk, i = Scene, l = Color, m = Object3D, n = SRGBColorSpace, o = MathUtils, p = PMREMGenerator, r = Vector2, s = WebGLRenderer, t = PerspectiveCamera, u = PointLight, v = ACESFilmicToneMapping, w = Plane, y = Raycaster;
 
-            // Color palette — warm pinks and roses
-            const palette = [
-                'rgba(255, 126, 179, alpha)',   // hot pink
-                'rgba(255, 117, 140, alpha)',   // rose
-                'rgba(255, 182, 210, alpha)',   // light pink
-                'rgba(240, 100, 160, alpha)',   // deep pink
-                'rgba(255, 210, 230, alpha)',   // blush
-                'rgba(230, 80, 130, alpha)',    // vivid rose
-            ];
-
-            function randColor(alpha) {
-                const c = palette[Math.floor(Math.random() * palette.length)];
-                return c.replace('alpha', alpha);
+            class Engine {
+                #e; canvas; camera; cameraMinAspect; cameraMaxAspect; cameraFov; maxPixelRatio; minPixelRatio; scene; renderer; #t;
+                size = { width: 0, height: 0, wWidth: 0, wHeight: 0, ratio: 0, pixelRatio: 0 };
+                render = this.#i; onBeforeRender = () => {}; onAfterRender = () => {}; onAfterResize = () => {};
+                #s = false; #n = false; isDisposed = false; #o; #r; #a; #c = new e(); #h = { elapsed: 0, delta: 0 }; #l;
+                constructor(e) {
+                    this.#e = { ...e }; this.#m(); this.#d(); this.#p(); this.resize(); this.#g();
+                }
+                #m() { this.camera = new t(); this.cameraFov = this.camera.fov; }
+                #d() { this.scene = new i(); }
+                #p() {
+                    if (this.#e.canvas) { this.canvas = this.#e.canvas; } 
+                    else if (this.#e.id) { this.canvas = document.getElementById(this.#e.id); }
+                    this.canvas.style.display = 'block';
+                    const e = { canvas: this.canvas, powerPreference: 'high-performance', ...(this.#e.rendererOptions ?? {}) };
+                    this.renderer = new s(e); this.renderer.outputColorSpace = n;
+                }
+                #g() {
+                    if (!(this.#e.size instanceof Object)) {
+                        window.addEventListener('resize', this.#f.bind(this));
+                        if (this.#e.size === 'parent' && this.canvas.parentNode) {
+                            this.#r = new ResizeObserver(this.#f.bind(this));
+                            this.#r.observe(this.canvas.parentNode);
+                        }
+                    }
+                    this.#o = new IntersectionObserver(this.#u.bind(this), { root: null, rootMargin: '0px', threshold: 0 });
+                    this.#o.observe(this.canvas);
+                    document.addEventListener('visibilitychange', this.#v.bind(this));
+                }
+                #y() {
+                    window.removeEventListener('resize', this.#f.bind(this));
+                    this.#r?.disconnect(); this.#o?.disconnect();
+                    document.removeEventListener('visibilitychange', this.#v.bind(this));
+                }
+                #u(e) { this.#s = e[0].isIntersecting; this.#s ? this.#w() : this.#z(); }
+                #v() { if (this.#s) { document.hidden ? this.#z() : this.#w(); } }
+                #f() { if (this.#a) clearTimeout(this.#a); this.#a = setTimeout(this.resize.bind(this), 100); }
+                resize() {
+                    let e, t;
+                    if (this.#e.size instanceof Object) { e = this.#e.size.width; t = this.#e.size.height; } 
+                    else if (this.#e.size === 'parent' && this.canvas.parentNode) { e = this.canvas.parentNode.offsetWidth; t = this.canvas.parentNode.offsetHeight; } 
+                    else { e = window.innerWidth; t = window.innerHeight; }
+                    this.size.width = e; this.size.height = t; this.size.ratio = e / t;
+                    this.#x(); this.#b(); this.onAfterResize(this.size);
+                }
+                #x() {
+                    this.camera.aspect = this.size.width / this.size.height;
+                    if (this.camera.isPerspectiveCamera && this.cameraFov) {
+                        if (this.cameraMinAspect && this.camera.aspect < this.cameraMinAspect) { this.#A(this.cameraMinAspect); } 
+                        else if (this.cameraMaxAspect && this.camera.aspect > this.cameraMaxAspect) { this.#A(this.cameraMaxAspect); } 
+                        else { this.camera.fov = this.cameraFov; }
+                    }
+                    this.camera.updateProjectionMatrix(); this.updateWorldSize();
+                }
+                #A(e) {
+                    const t = Math.tan(o.degToRad(this.cameraFov / 2)) / (this.camera.aspect / e);
+                    this.camera.fov = 2 * o.radToDeg(Math.atan(t));
+                }
+                updateWorldSize() {
+                    if (this.camera.isPerspectiveCamera) {
+                        const e = (this.camera.fov * Math.PI) / 180;
+                        this.size.wHeight = 2 * Math.tan(e / 2) * this.camera.position.length();
+                        this.size.wWidth = this.size.wHeight * this.camera.aspect;
+                    }
+                }
+                #b() {
+                    this.renderer.setSize(this.size.width, this.size.height);
+                    this.#t?.setSize(this.size.width, this.size.height);
+                    let e = window.devicePixelRatio;
+                    if (this.maxPixelRatio && e > this.maxPixelRatio) { e = this.maxPixelRatio; } 
+                    else if (this.minPixelRatio && e < this.minPixelRatio) { e = this.minPixelRatio; }
+                    this.renderer.setPixelRatio(e); this.size.pixelRatio = e;
+                }
+                #w() {
+                    if (this.#n) return;
+                    const animate = () => {
+                        this.#l = requestAnimationFrame(animate);
+                        this.#h.delta = this.#c.getDelta();
+                        this.#h.elapsed += this.#h.delta;
+                        this.onBeforeRender(this.#h);
+                        this.render();
+                        this.onAfterRender(this.#h);
+                    };
+                    this.#n = true; this.#c.start(); animate();
+                }
+                #z() {
+                    if (this.#n) { cancelAnimationFrame(this.#l); this.#n = false; this.#c.stop(); }
+                }
+                #i() { this.renderer.render(this.scene, this.camera); }
+                clear() {
+                    this.scene.traverse(e => {
+                        if (e.isMesh && typeof e.material === 'object' && e.material !== null) {
+                            Object.keys(e.material).forEach(t => {
+                                const i = e.material[t];
+                                if (i !== null && typeof i === 'object' && typeof i.dispose === 'function') { i.dispose(); }
+                            });
+                            e.material.dispose(); e.geometry.dispose();
+                        }
+                    });
+                    this.scene.clear();
+                }
+                dispose() { this.#y(); this.#z(); this.clear(); this.renderer.dispose(); this.renderer.forceContextLoss(); this.isDisposed = true; }
             }
 
-            class Orb {
-                constructor() {
-                    this.reset();
+            const interactions = new Map(), mousePos = new r();
+            let isInteracting = false;
+            function registerInteraction(e) {
+                const t = { position: new r(), nPosition: new r(), hover: false, touching: false, onEnter() {}, onMove() {}, onClick() {}, onLeave() {}, ...e };
+                if (!interactions.has(e.domElement)) {
+                    interactions.set(e.domElement, t);
+                    if (!isInteracting) {
+                        document.body.addEventListener('pointermove', (ev) => { mousePos.x = ev.clientX; mousePos.y = ev.clientY; processInteraction(); });
+                        isInteracting = true;
+                    }
                 }
-                reset() {
-                    this.x = Math.random() * W;
-                    this.y = H + Math.random() * 200;           // start below screen
-                    this.radius = 8 + Math.random() * 55;       // varied sizes
-                    this.speedY = 0.15 + Math.random() * 0.5;   // slow float up
-                    this.speedX = (Math.random() - 0.5) * 0.4;  // gentle horizontal drift
-                    this.opacity = 0.04 + Math.random() * 0.14; // subtle transparency
-                    this.color = randColor(this.opacity);
-                    this.blur = 20 + Math.random() * 60;
-                    this.phase = Math.random() * Math.PI * 2;   // wave phase
-                    this.waveAmp = 0.4 + Math.random() * 1.2;  // horizontal wave amplitude
-                    this.waveFreq = 0.003 + Math.random() * 0.008;
-                    this.tick = 0;
-                }
-                update() {
-                    this.tick++;
-                    this.y -= this.speedY;
-                    this.x += this.speedX + Math.sin(this.tick * this.waveFreq + this.phase) * this.waveAmp * 0.1;
-                    if (this.y + this.radius < -100) this.reset();
-                }
-                draw() {
-                    ctx.save();
-                    ctx.filter = `blur(${this.blur}px)`;
-                    ctx.globalAlpha = this.opacity;
-                    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-                    grad.addColorStop(0, randColor(this.opacity));
-                    grad.addColorStop(1, 'rgba(255,126,179,0)');
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = grad;
-                    ctx.fill();
-                    ctx.restore();
+                t.dispose = () => { interactions.delete(e.domElement); };
+                return t;
+            }
+            function processInteraction() {
+                for (const [elem, t] of interactions) {
+                    const i = elem.getBoundingClientRect();
+                    if (mousePos.x >= i.left && mousePos.x <= i.left + i.width && mousePos.y >= i.top && mousePos.y <= i.top + i.height) {
+                        t.position.x = mousePos.x - i.left; t.position.y = mousePos.y - i.top;
+                        t.nPosition.x = (t.position.x / i.width) * 2 - 1; t.nPosition.y = (-t.position.y / i.height) * 2 + 1;
+                        if (!t.hover) { t.hover = true; t.onEnter(t); }
+                        t.onMove(t);
+                    } else if (t.hover) { t.hover = false; t.onLeave(t); }
                 }
             }
 
-            // Spawn orbs — more = richer, but keep performance ok
-            const orbs = Array.from({ length: 40 }, () => {
-                const o = new Orb();
-                o.y = Math.random() * H; // spread initial y across full screen
-                return o;
-            });
+            const { randFloat: k, randFloatSpread: E } = o;
+            const F = new a(), I = new a(), O = new a(), V = new a(), B = new a(), N = new a(), _ = new a(), j = new a(), H = new a(), T = new a();
 
-            function animate() {
-                // Soft background fill (preserves body color, subtle trail effect)
-                ctx.fillStyle = 'rgba(240, 220, 232, 0.08)';
-                ctx.fillRect(0, 0, W, H);
+            class Physics {
+                constructor(e) {
+                    this.config = e; this.positionData = new Float32Array(3 * e.count).fill(0);
+                    this.velocityData = new Float32Array(3 * e.count).fill(0); this.sizeData = new Float32Array(e.count).fill(1);
+                    this.center = new a(); this.#R(); this.setSizes();
+                }
+                #R() {
+                    for (let i = 1; i < this.config.count; i++) {
+                        const s = 3 * i;
+                        this.positionData[s] = E(2 * this.config.maxX);
+                        this.positionData[s + 1] = E(2 * this.config.maxY);
+                        this.positionData[s + 2] = E(2 * this.config.maxZ);
+                    }
+                }
+                setSizes() {
+                    this.sizeData[0] = this.config.size0;
+                    for (let i = 1; i < this.config.count; i++) { this.sizeData[i] = k(this.config.minSize, this.config.maxSize); }
+                }
+                update(e) {
+                    const { config: t, center: i, positionData: s, sizeData: n, velocityData: o } = this;
+                    let r = 0;
+                    if (t.controlSphere0) { r = 1; F.fromArray(s, 0); F.lerp(i, 0.1).toArray(s, 0); V.set(0, 0, 0).toArray(o, 0); }
+                    for (let idx = r; idx < t.count; idx++) {
+                        const base = 3 * idx; I.fromArray(s, base); B.fromArray(o, base);
+                        B.y -= e.delta * t.gravity * n[idx]; B.multiplyScalar(t.friction); B.clampLength(0, t.maxVelocity);
+                        I.add(B); I.toArray(s, base); B.toArray(o, base);
+                    }
+                    for (let idx = r; idx < t.count; idx++) {
+                        const base = 3 * idx; I.fromArray(s, base); B.fromArray(o, base); const radius = n[idx];
+                        for (let jdx = idx + 1; jdx < t.count; jdx++) {
+                            const otherBase = 3 * jdx; O.fromArray(s, otherBase); N.fromArray(o, otherBase);
+                            const otherRadius = n[jdx]; _.copy(O).sub(I); const dist = _.length(); const sumRadius = radius + otherRadius;
+                            if (dist < sumRadius) {
+                                const overlap = sumRadius - dist;
+                                j.copy(_).normalize().multiplyScalar(0.5 * overlap);
+                                H.copy(j).multiplyScalar(Math.max(B.length(), 1)); T.copy(j).multiplyScalar(Math.max(N.length(), 1));
+                                I.sub(j); B.sub(H); I.toArray(s, base); B.toArray(o, base);
+                                O.add(j); N.add(T); O.toArray(s, otherBase); N.toArray(o, otherBase);
+                            }
+                        }
+                        if (t.controlSphere0) {
+                            _.copy(F).sub(I); const dist = _.length(); const sumRadius0 = radius + n[0];
+                            if (dist < sumRadius0) { const diff = sumRadius0 - dist; j.copy(_.normalize()).multiplyScalar(diff); H.copy(j).multiplyScalar(Math.max(B.length(), 2)); I.sub(j); B.sub(H); }
+                        }
+                        if (Math.abs(I.x) + radius > t.maxX) { I.x = Math.sign(I.x) * (t.maxX - radius); B.x = -B.x * t.wallBounce; }
+                        if (t.gravity === 0) { if (Math.abs(I.y) + radius > t.maxY) { I.y = Math.sign(I.y) * (t.maxY - radius); B.y = -B.y * t.wallBounce; } } 
+                        else if (I.y - radius < -t.maxY) { I.y = -t.maxY + radius; B.y = -B.y * t.wallBounce; }
+                        const maxBoundary = Math.max(t.maxZ, t.maxSize);
+                        if (Math.abs(I.z) + radius > maxBoundary) { I.z = Math.sign(I.z) * (t.maxZ - radius); B.z = -B.z * t.wallBounce; }
+                        I.toArray(s, base); B.toArray(o, base);
+                    }
+                }
+            }
 
-                orbs.forEach(o => {
-                    o.update();
-                    o.draw();
+            class ScatteringMaterial extends c {
+                constructor(e) {
+                    super(e);
+                    this.uniforms = { thicknessDistortion: { value: 0.1 }, thicknessAmbient: { value: 0 }, thicknessAttenuation: { value: 0.1 }, thicknessPower: { value: 2 }, thicknessScale: { value: 10 } };
+                    this.defines.USE_UV = '';
+                    this.onBeforeCompile = e => {
+                        Object.assign(e.uniforms, this.uniforms);
+                        e.fragmentShader = '\n uniform float thicknessPower;\n uniform float thicknessScale;\n uniform float thicknessDistortion;\n uniform float thicknessAmbient;\n uniform float thicknessAttenuation;\n' + e.fragmentShader;
+                        e.fragmentShader = e.fragmentShader.replace('void main() {', '\n void RE_Direct_Scattering(const in IncidentLight directLight, const in vec2 uv, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, inout ReflectedLight reflectedLight) {\n vec3 scatteringHalf = normalize(directLight.direction + (geometryNormal * thicknessDistortion));\n float scatteringDot = pow(saturate(dot(geometryViewDir, -scatteringHalf)), thicknessPower) * thicknessScale;\n #ifdef USE_COLOR\n vec3 scatteringIllu = (scatteringDot + thicknessAmbient) * vColor;\n #else\n vec3 scatteringIllu = (scatteringDot + thicknessAmbient) * diffuse;\n #endif\n reflectedLight.directDiffuse += scatteringIllu * thicknessAttenuation * directLight.color;\n }\n\n void main() {\n');
+                        const t = h.lights_fragment_begin.replaceAll('RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );', '\n RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );\n RE_Direct_Scattering(directLight, vUv, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, reflectedLight);\n');
+                        e.fragmentShader = e.fragmentShader.replace('#include <lights_fragment_begin>', t);
+                    };
+                }
+            }
+
+            const DEFAULTS = { count: 100, colors: ['#ff7eb3', '#ff758c', '#ffb6d2', '#f064a0', '#ffd2e6'], ambientColor: 0xffffff, ambientIntensity: 1, lightIntensity: 200, materialParams: { metalness: 0.5, roughness: 0.5, clearcoat: 1, clearcoatRoughness: 0.15 }, minSize: 0.5, maxSize: 1, size0: 1, gravity: 0.5, friction: 0.9975, wallBounce: 0.95, maxVelocity: 0.15, maxX: 5, maxY: 5, maxZ: 2, controlSphere0: false, followCursor: true };
+            const TEMP_OBJ = new m();
+
+            class BallpitMesh extends d {
+                constructor(e, t = {}) {
+                    const i = { ...DEFAULTS, ...t }; const s = new Scene(); const n = new p(e, 0.04).fromScene(s).texture;
+                    const o = new g(); const r = new ScatteringMaterial({ envMap: n, ...i.materialParams }); r.envMapRotation.x = -Math.PI / 2;
+                    super(o, r, i.count); this.config = i; this.physics = new Physics(i);
+                    this.ambientLight = new f(this.config.ambientColor, this.config.ambientIntensity); this.add(this.ambientLight);
+                    this.light = new u(new l(this.config.colors[0]), this.config.lightIntensity); this.add(this.light);
+                    this.setColors(i.colors);
+                }
+                setColors(e) {
+                    if (Array.isArray(e) && e.length > 1) {
+                        const colors = e.map(col => new l(col));
+                        for (let idx = 0; idx < this.count; idx++) {
+                            const ratio = idx / this.count; const scaled = ratio * (colors.length - 1); const i = Math.floor(scaled);
+                            const start = colors[i]; const end = colors[Math.min(i + 1, colors.length - 1)]; const alpha = scaled - i;
+                            const out = new l().copy(start).lerp(end, alpha);
+                            this.setColorAt(idx, out); if (idx === 0) this.light.color.copy(out);
+                        }
+                        this.instanceColor.needsUpdate = true;
+                    }
+                }
+                update(e) {
+                    this.physics.update(e);
+                    for (let idx = 0; idx < this.count; idx++) {
+                        TEMP_OBJ.position.fromArray(this.physics.positionData, 3 * idx);
+                        if (idx === 0 && this.config.followCursor === false) { TEMP_OBJ.scale.setScalar(0); } 
+                        else { TEMP_OBJ.scale.setScalar(this.physics.sizeData[idx]); }
+                        TEMP_OBJ.updateMatrix(); this.setMatrixAt(idx, TEMP_OBJ.matrix);
+                        if (idx === 0) this.light.position.copy(TEMP_OBJ.position);
+                    }
+                    this.instanceMatrix.needsUpdate = true;
+                }
+            }
+
+            function createBallpit(canvas, props = {}) {
+                const engine = new Engine({ canvas: canvas, size: 'parent', rendererOptions: { antialias: true, alpha: true } });
+                engine.renderer.toneMapping = v; engine.camera.position.set(0, 0, 20); engine.camera.lookAt(0, 0, 0);
+                engine.cameraMaxAspect = 1.5; engine.resize();
+                let spheres = new BallpitMesh(engine.renderer, props); engine.scene.add(spheres);
+                const raycaster = new y(), plane = new w(new a(0, 0, 1), 0), intersectPoint = new a();
+                const interaction = registerInteraction({
+                    domElement: canvas,
+                    onMove() {
+                        raycaster.setFromCamera(interaction.nPosition, engine.camera);
+                        engine.camera.getWorldDirection(plane.normal);
+                        raycaster.ray.intersectPlane(plane, intersectPoint);
+                        spheres.physics.center.copy(intersectPoint); spheres.config.controlSphere0 = true;
+                    },
+                    onLeave() { spheres.config.controlSphere0 = false; }
                 });
-
-                requestAnimationFrame(animate);
+                engine.onBeforeRender = e => spheres.update(e);
+                engine.onAfterResize = e => { spheres.config.maxX = e.wWidth / 2; spheres.config.maxY = e.wHeight / 2; };
+                return { engine, spheres, dispose: () => { interaction.dispose(); engine.dispose(); } };
             }
 
-            animate();
-        })();
+            // Initialize
+            const canvas = document.getElementById('antigravity-bg');
+            if (canvas) {
+                createBallpit(canvas, {
+                    count: 100,
+                    gravity: 0.01,
+                    friction: 0.9975,
+                    wallBounce: 0.95,
+                    followCursor: false,
+                    colors: ['#ff7eb3', '#ff758c', '#ffb6d2', '#f064a0', '#ffd2e6'],
+                    minSize: 0.6,
+                    maxSize: 1.4
+                });
+            }
+        </script>
 
+
+    <script>
         // PWA Service Worker Registration & Auto-Update
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

@@ -51,16 +51,7 @@
             cursor: none; /* Custom cursor */
         }
 
-        /* Antigravity Canvas Background */
-        #antigravity-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
+
 
         .page-wrap, .cursor-glow, .cursor-dot {
             position: relative;
@@ -461,8 +452,7 @@
     <div class="cursor-glow"></div>
     <div class="cursor-dot"></div>
 
-    <!-- Antigravity Animated Background -->
-    <canvas id="antigravity-bg"></canvas>
+
 
     <div class="page-wrap">
 
@@ -976,162 +966,7 @@
         });
     </script>
 
-    <!-- ============================================ -->
-    <!-- BALLPIT BACKGROUND ANIMATION (React Bits)    -->
-    <!-- ============================================ -->
-    <script type="module">
-        import {
-            Vector3, MeshStandardMaterial, InstancedMesh, Clock, AmbientLight, SphereGeometry, Scene, Color, Object3D, SRGBColorSpace, MathUtils, Vector2, WebGLRenderer, PerspectiveCamera, PointLight, Plane, Raycaster
-        } from 'three';
 
-        // Helper aliases
-        const Vec3 = Vector3;
-        const ClockObj = Clock;
-
-        class Engine {
-            constructor(options) {
-                this.canvas = document.getElementById(options.id);
-                this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
-                this.renderer.setPixelRatio(window.devicePixelRatio);
-                this.scene = new Scene();
-                this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.z = 20;
-                this.clock = new ClockObj();
-                this.size = { width: 0, height: 0, wWidth: 0, wHeight: 0 };
-                
-                window.addEventListener('resize', () => this.resize());
-                this.resize();
-                this.animate();
-            }
-
-            resize() {
-                this.size.width = window.innerWidth;
-                this.size.height = window.innerHeight;
-                this.renderer.setSize(this.size.width, this.size.height);
-                this.camera.aspect = this.size.width / this.size.height;
-                this.camera.updateProjectionMatrix();
-                
-                const fov = (this.camera.fov * Math.PI) / 180;
-                this.size.wHeight = 2 * Math.tan(fov / 2) * this.camera.position.z;
-                this.size.wWidth = this.size.wHeight * this.camera.aspect;
-            }
-
-            animate() {
-                requestAnimationFrame(() => this.animate());
-                const delta = Math.min(this.clock.getDelta(), 0.1);
-                if (this.onUpdate) this.onUpdate(delta);
-                this.renderer.render(this.scene, this.camera);
-            }
-        }
-
-        class Ballpit {
-            constructor(engine, config) {
-                this.engine = engine;
-                this.config = { count: 50, gravity: 0.5, friction: 0.99, wallBounce: 0.8, colors: ["#5227FF","#7cff67","#ff6b6b"], ...config };
-                
-                const geometry = new SphereGeometry(0.8, 32, 24);
-                const material = new MeshStandardMaterial({ roughness: 0.1, metalness: 0.2 });
-                this.mesh = new InstancedMesh(geometry, material, this.config.count);
-                
-                this.positions = new Float32Array(this.config.count * 3);
-                this.velocities = new Float32Array(this.config.count * 3);
-                this.sizes = new Float32Array(this.config.count);
-                this.dummy = new Object3D();
-                this.mouse = new Vector2();
-                this.mouseWorld = new Vec3();
-                
-                this.setup();
-                engine.scene.add(this.mesh);
-                
-                const ambient = new AmbientLight(0xffffff, 1.5);
-                engine.scene.add(ambient);
-                const sun = new PointLight(0xffffff, 500);
-                sun.position.set(5, 10, 10);
-                engine.scene.add(sun);
-            }
-
-            setup() {
-                const colors = this.config.colors.map(c => new Color(c));
-                for (let i = 0; i < this.config.count; i++) {
-                    this.positions[i*3] = (Math.random() - 0.5) * 10;
-                    this.positions[i*3+1] = (Math.random() - 0.5) * 10;
-                    this.positions[i*3+2] = (Math.random() - 0.5) * 2;
-                    this.sizes[i] = 0.5 + Math.random() * 0.8;
-                    this.mesh.setColorAt(i, colors[i % colors.length]);
-                }
-                this.mesh.instanceColor.needsUpdate = true;
-            }
-
-            update(delta) {
-                const { wWidth, wHeight } = this.engine.size;
-                const maxX = wWidth / 2;
-                const maxY = wHeight / 2;
-
-                for (let i = 0; i < this.config.count; i++) {
-                    const idx = i * 3;
-                    const r = this.sizes[i];
-
-                    // Gravity
-                    this.velocities[idx+1] -= this.config.gravity * delta * 15;
-                    
-                    // Apply velocity
-                    this.positions[idx] += this.velocities[idx] * delta;
-                    this.positions[idx+1] += this.velocities[idx+1] * delta;
-                    this.positions[idx+2] += this.velocities[idx+2] * delta;
-
-                    // Friction
-                    this.velocities[idx] *= this.config.friction;
-                    this.velocities[idx+1] *= this.config.friction;
-                    this.velocities[idx+2] *= this.config.friction;
-
-                    // Boundaries
-                    if (this.positions[idx] + r > maxX) { this.positions[idx] = maxX - r; this.velocities[idx] *= -this.config.wallBounce; }
-                    if (this.positions[idx] - r < -maxX) { this.positions[idx] = -maxX + r; this.velocities[idx] *= -this.config.wallBounce; }
-                    if (this.positions[idx+1] + r > maxY) { this.positions[idx+1] = maxY - r; this.velocities[idx+1] *= -this.config.wallBounce; }
-                    if (this.positions[idx+1] - r < -maxY) { this.positions[idx+1] = -maxY + r; this.velocities[idx+1] *= -this.config.wallBounce; }
-                    if (Math.abs(this.positions[idx+2]) > 2) { this.velocities[idx+2] *= -1; }
-
-                    // Mouse Interaction
-                    if (this.config.followCursor) {
-                        const dx = this.positions[idx] - this.mouseWorld.x;
-                        const dy = this.positions[idx+1] - this.mouseWorld.y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 4) {
-                            const force = (4 - dist) * 0.5;
-                            this.velocities[idx] += (dx / dist) * force;
-                            this.velocities[idx+1] += (dy / dist) * force;
-                        }
-                    }
-
-                    this.dummy.position.set(this.positions[idx], this.positions[idx+1], this.positions[idx+2]);
-                    this.dummy.scale.setScalar(r);
-                    this.dummy.updateMatrix();
-                    this.mesh.setMatrixAt(i, this.dummy.matrix);
-                }
-                this.mesh.instanceMatrix.needsUpdate = true;
-            }
-        }
-
-        const engine = new Engine({ id: 'antigravity-bg' });
-        const pit = new Ballpit(engine, {
-            count: 60,
-            gravity: 0.5,
-            followCursor: true,
-            colors: ["#ff7eb3", "#ff758c", "#ff87bd"]
-        });
-
-        engine.onUpdate = (d) => pit.update(d);
-
-        // Mouse tracking
-        const plane = new Plane(new Vec3(0, 0, 1), 0);
-        const raycaster = new Raycaster();
-        window.addEventListener('pointermove', (e) => {
-            pit.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            pit.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(pit.mouse, engine.camera);
-            raycaster.ray.intersectPlane(plane, pit.mouseWorld);
-        });
-    </script>
 
 
     <script>

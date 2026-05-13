@@ -93,7 +93,14 @@ export default {
         if (!geminiResponse.ok) {
           const errorText = await geminiResponse.text();
           console.error("Erro do Gemini:", errorText);
-          return new Response(JSON.stringify({ error: 'Falha ao analisar a imagem com a IA' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          let errorDetail = 'Falha ao analisar a imagem com a IA';
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorDetail += `: ${errorJson.error.message || errorText}`;
+          } catch (e) {
+            errorDetail += `: ${errorText}`;
+          }
+          return new Response(JSON.stringify({ error: errorDetail }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         const geminiData = await geminiResponse.json();

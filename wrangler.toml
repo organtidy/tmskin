@@ -16,6 +16,6 @@ binding = "DB"
 database_name = "tmskin-db"
 database_id = "25d01120-3c4c-4df4-a2f9-0a6d1bf98df1"
 
-# Atenção: Você deve adicionar sua API Key da OpenAI de forma segura, executando o seguinte comando no terminal:
-# wrangler secret put OPENAI_API_KEY
+# Atenção: Você deve adicionar sua API Key do Google Gemini de forma segura, executando o seguinte comando no terminal:
+# wrangler secret put GEMINI_API_KEY
 # E então colar sua chave quando solicitado. Não coloque a chave diretamente neste arquivo!

@@ -2,7 +2,7 @@
  * Welcome to Cloudflare Workers!
  *
  * This is an API for the Skincare AI MVP.
- * It receives a Base64 image, sends it to OpenAI for analysis,
+ * It receives a Base64 image, sends it to Google Gemini for analysis,
  * and fetches matching products from Cloudflare D1.
  */
 
@@ -65,7 +65,7 @@ export default {
           rawBase64 = base64Image.split(',')[1];
         }
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`;
         
         const geminiResponse = await fetch(geminiUrl, {
           method: 'POST',
@@ -86,12 +86,7 @@ export default {
                   }
                 ]
               }
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 1024,
-              response_mime_type: "application/json"
-            }
+            ]
           })
         });
 

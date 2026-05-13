@@ -86,7 +86,12 @@ export default {
                   }
                 ]
               }
-            ]
+            ],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 600,
+              response_mime_type: "application/json"
+            }
           })
         });
 

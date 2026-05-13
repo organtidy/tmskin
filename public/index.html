@@ -720,7 +720,10 @@
         });
 
         // API URL
-        const WORKER_URL = "https://tmskin-backend.organtidy.workers.dev/api/analyze";
+        // API URL - Dynamic based on environment
+        const WORKER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? "http://localhost:8787/api/analyze"
+            : "https://tmskin-backend.organtidy.workers.dev/api/analyze";
 
         const video = document.getElementById('videoElement');
         const canvas = document.getElementById('canvasElement');

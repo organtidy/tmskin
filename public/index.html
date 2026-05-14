@@ -92,8 +92,8 @@
 
         /* Skeuomorphic Card */
         .skeuo-card {
-            background: rgba(240, 220, 232, 0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(242, 226, 236, 0.98);
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(8px);
             border-radius: 30px;
             box-shadow: 
@@ -538,14 +538,14 @@
             </section>
 
             <!-- Loading State -->
-            <section id="loading-section" class="hidden skeuo-card p-10 flex flex-col items-center justify-center text-center absolute top-0 left-0 w-full">
+            <section id="loading-section" class="hidden skeuo-card p-10 flex flex-col items-center justify-center text-center w-full relative">
                 <div class="loader-ring mb-8"></div>
                 <h2 class="text-xl font-extrabold skeuo-text mb-2">Processando IA...</h2>
                 <p class="text-sm inset-text">Avaliando textura, poros e hidratação.</p>
             </section>
 
             <!-- Results Section -->
-            <section id="results-section" class="hidden flex flex-col gap-6 absolute top-0 left-0 w-full">
+            <section id="results-section" class="hidden flex flex-col gap-6 w-full relative">
                 
                 <button id="resetBtn" class="skeuo-btn w-12 h-12 rounded-full self-start flex items-center justify-center text-gray-500 mb-2">
                     <i class="fas fa-arrow-left"></i>
